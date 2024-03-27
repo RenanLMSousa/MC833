@@ -22,25 +22,51 @@
 
 void str_cli(FILE *fp, int sock_fd) {
     char sendline[MAXLINE];
-    
+    ssize_t n;
     while (fgets(sendline, MAXLINE, fp) != NULL) {
-        printf("%s",sendline);
         send_all(sock_fd,sendline,0);
+        if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
+            printf("str_cli: server terminated prematurely");
+        }
+        else{
+            printf("%s\n",sendline);
+        }
     }
 }
+
 void do_client_stuff(int sock_fd){
 
     // Executando a lógica do cliente
     struct music my_music;
-    my_music.identifier = 1;
-    strcpy(my_music.title, "The Four Seasons");
-    strcpy(my_music.performer, "Antonio Vivaldi");
-    strcpy(my_music.language, "Italian");
-    strcpy(my_music.music_type, "Classical");
-    my_music.release_year = 1723;
-    strcpy(my_music.filename, "the_four_seasons.mp3");
-    cadastrar_musica(sock_fd,my_music);
-    //str_cli(stdin, sock_fd); /* faz tudo */
+    int operation;
+    scanf("%d",operation);
+
+    switch (operation)
+    {
+    case CADASTRAR_UMA_MUSICA:
+      
+        break;
+    case REMOVER_UMA_MUSICA:
+        
+        break;
+    case LISTAR_MUSICAS_POR_ANO:
+    
+        break;
+    case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
+    
+        break;
+    case LISTAR_MUSICAS_POR_TIPO:
+    
+        break;
+    case LISTAR_INFO_MUSICA_POR_ID:
+    
+        break;
+    
+    default:
+        break;
+    }
+    
+    str_cli(stdin, sock_fd); /* faz tudo */
 
 }
 int main() {
@@ -61,11 +87,15 @@ int main() {
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(atoi(serverConfig.porta));
+    servaddr.sin_addr.s_addr = htons(atoi(serverConfig.ip));
+    printf("%d\n",servaddr.sin_addr.s_addr);
     inet_pton(AF_INET, serverConfig.porta, &servaddr.sin_addr);
 
     // Conectando ao servidor
     connect(sock_fd, (SA *) &servaddr, sizeof(servaddr));
+    
 
+    printf("Connection stablished\n");
     do_client_stuff(sock_fd);
     
     // Fechando o socket e saindo

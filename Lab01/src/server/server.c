@@ -28,7 +28,7 @@ again:
     bzero(&buf, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
         // Escrever de volta para o cliente
-        printf("BUFFER SIZE: %d\n%s\n",strlen(buf),buf);
+        printf("%s\n",buf);
         if (write(new_fd, buf, n) < 0) {
             perror("str_echo: write error");
             return;
@@ -74,7 +74,7 @@ int main() {
     // Associação do socket ao endereço do servidor
     bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
     // Definição do socket para escutar conexões
-
+    printf("%d\n",servaddr.sin_addr.s_addr);
     listen(sock_fd, LISTENQ);
 
     for (;;) {

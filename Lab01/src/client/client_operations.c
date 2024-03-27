@@ -19,14 +19,22 @@ void send_all(int __fd, const void *__buf, int __flags){
 
 }
 
+void anexar_header_operacao(char * message , int operacao){
+
+
+    strcat(operacao,"\n");
+    strcat(operacao,message);
+
+    return 1;
+}
 
 // Função para cadastrar uma nova música
 void cadastrar_musica(int sock_fd,struct music nova_musica) {
     // Falta mandar o arquivo da música em sí
-    char  strMusic[100000];
+    char  strMusic[1000];
     
     music_to_string(nova_musica,strMusic);
-
+    anexar_header_operacao(strMusic,CADASTRAR_UMA_MUSICA);
     send_all(sock_fd,strMusic,0);
 
 }

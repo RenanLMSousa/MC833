@@ -55,7 +55,3 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
 
     return num_songs;
 }
-int read_file_content(const char *filename, char *buffer, size_t buffer_size) {
-    
-    return 0;
-}
