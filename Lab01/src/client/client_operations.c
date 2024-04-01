@@ -46,17 +46,17 @@ void remover_musica(int sock_fd, int identifier) {
 
 // Função para listar todas as músicas lançadas em um determinado ano
 void listar_musicas_por_ano(int sock_fd,int year) {
-
+    // ID, titulo e interprete
 }
 
 // Função para listar todas as músicas em um dado idioma lançadas em um certo ano
 void listar_musicas_por_idioma_e_ano(int sock_fd, const char *idioma, int year) {
-
+    // ID, titulo e interprete
 }
 
 // Função para listar todas as músicas de um certo tipo
 void listar_musicas_por_tipo(int sock_fd,const char *tipo) {
-
+    // ID, titulo e interprete
 }
 
 // Função para listar todas as informações de uma música dado o seu identificador

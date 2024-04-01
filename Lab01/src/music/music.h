@@ -5,7 +5,7 @@
 #define PERFORMER_LENGTH 100
 #define LANGUAGE_LENGTH 50
 #define MUSIC_TYPE_LENGTH 50
-#define FILENAME_LENGTH 100
+#define CHORUS_LENGTH 1000
 
 struct music {
     int identifier;
@@ -13,8 +13,8 @@ struct music {
     char performer[PERFORMER_LENGTH];
     char language[LANGUAGE_LENGTH];
     char music_type[MUSIC_TYPE_LENGTH];
+    char chorus[CHORUS_LENGTH];
     int release_year;
-    char filename[FILENAME_LENGTH];
 };
 
 // Function prototype to print music details
