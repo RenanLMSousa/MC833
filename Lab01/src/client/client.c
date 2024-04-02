@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include "client_operations.h"
 #include "../external_files/config_handler.h"
@@ -45,14 +46,37 @@ void print_menu() {
     printf("7 - List all informations of all songs.\n");
 }
 
+int read_int(int isId) {
+    int valid_input = 0, i, integer;
+    char buffer[3000];
+    while (!valid_input) {
+        if (isId) {
+            printf("Enter identifier: \n");
+        }
+        else {
+            printf("Enter year: \n");
+        }
+        fgets(buffer, sizeof(buffer), stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        for (i = 0; buffer[i] != '\0'; i++) {
+            if (!isdigit(buffer[i])) {
+                printf("Invalid input. Please enter an integer.\n");
+                break; 
+            }
+        }
+        if (buffer[i] == '\0') {
+            integer = atoi(buffer);
+            valid_input = 1;
+        }
+    }
+    return integer;
+}
+
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
     struct music my_music;
-    int operation;
-    int identifier, year;
-    char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH];
-
-    char buffer[3000];
+    int operation, identifier, year;
+    char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH], buffer[3000];
     while(true){
         print_menu();
         printf("Enter operation: \n");
@@ -61,10 +85,8 @@ void do_client_stuff(int sock_fd) {
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:
-                printf("Enter identifier: \n");
-                fgets(buffer, sizeof(buffer), stdin);
-                my_music.identifier = atoi(buffer);
-
+                my_music.identifier = read_int(1);
+                
                 printf("Enter title: \n");
                 fgets(my_music.title, sizeof(my_music.title), stdin);
                 my_music.title[strcspn(my_music.title, "\n")] = '\0'; // Remover a quebra de linha
@@ -85,16 +107,12 @@ void do_client_stuff(int sock_fd) {
                 fgets(my_music.chorus, sizeof(my_music.chorus), stdin);
                 my_music.chorus[strcspn(my_music.chorus, "\n")] = '\0';
 
-                printf("Enter release year: \n");
-                fgets(buffer, sizeof(buffer), stdin);
-                my_music.release_year = atoi(buffer);
+                my_music.release_year = read_int(0);
 
                 cadastrar_musica(sock_fd, my_music);
                 break;
             case REMOVER_UMA_MUSICA:
-                printf("Enter identifier: ");
-                fgets(buffer, sizeof(buffer), stdin);
-                identifier = atoi(buffer);
+                identifier = read_int(1);
                 remover_musica(sock_fd, identifier);
                 break;
             case LISTAR_MUSICAS_POR_ANO:
@@ -117,9 +135,7 @@ void do_client_stuff(int sock_fd) {
                 listar_musicas_por_tipo(sock_fd, music_type);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
-                printf("Enter identifier: ");
-                fgets(buffer, sizeof(buffer), stdin);
-                identifier = atoi(buffer);
+                identifier = read_int(1);
                 listar_info_musica_por_id(sock_fd, identifier);
                 break;
             default:
