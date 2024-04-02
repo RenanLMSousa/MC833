@@ -3,6 +3,19 @@
 
 #include "../music/music.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <signal.h>
+
 #define MAX_SONGS 100
 
 // Definições para operações
@@ -24,10 +37,10 @@ void remover_musica(int sock_fd, int identifier);
 void listar_musicas_por_ano(int sock_fd, int year);
 
 // Função para listar todas as músicas em um dado idioma lançadas em um certo ano
-void listar_musicas_por_idioma_e_ano(int sock_fd, const char *idioma, int year);
+void listar_musicas_por_idioma_e_ano(int sock_fd,  char *idioma, int year);
 
 // Função para listar todas as músicas de um certo tipo
-void listar_musicas_por_tipo(int sock_fd, const char *tipo);
+void listar_musicas_por_tipo(int sock_fd, char *tipo);
 
 // Função para listar todas as informações de uma música dado o seu identificador
 void listar_info_musica_por_id(int sock_fd, int identifier);

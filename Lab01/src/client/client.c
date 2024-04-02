@@ -14,12 +14,12 @@
 #include "client_operations.h"
 #include "../external_files/config_handler.h"
 
-
+#define true 1
 #define SA  struct sockaddr
 #define LISTENQ 20
 #define MAXLINE 1000
 
-
+/*
 void str_cli(FILE *fp, int sock_fd) {
     char sendline[MAXLINE];
     ssize_t n;
@@ -32,7 +32,7 @@ void str_cli(FILE *fp, int sock_fd) {
             printf("%s\n",sendline);
         }
     }
-}
+}*/
 
 void print_menu() {
     printf("Choose your operation by entering one of the following numbers: \n");
@@ -45,68 +45,97 @@ void print_menu() {
     printf("7 - List all informations of all songs.\n");
 }
 
-void do_client_stuff(int sock_fd){
-
+void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
     struct music my_music;
     int operation;
     int identifier, year;
     char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH];
-    print_menu();
-    scanf("%d", &operation);
 
-    switch (operation)
-    {
-    case CADASTRAR_UMA_MUSICA:
-        printf("Enter identifier: \n");
-        scanf("%d", &my_music.identifier);
-        printf("Enter title: \n");
-        scanf(" %s", my_music.title);
-        printf("Enter performer: \n");
-        scanf(" %s", my_music.performer);
-        printf("Enter language: \n");
-        scanf(" %s", my_music.language);
-        printf("Enter music type: \n");
-        scanf(" %s", my_music.music_type);
-        printf("Enter chorus: \n");
-        scanf(" %s", my_music.chorus);
-        printf("Enter release year: \n");
-        scanf("%d", &my_music.release_year);
-        cadastrar_musica(sock_fd, my_music);
-        break;
-    case REMOVER_UMA_MUSICA:
-        printf("Enter identifier: ");
-        scanf("%d", &identifier);
-        remover_musica(sock_fd, identifier);
-        break;
-    case LISTAR_MUSICAS_POR_ANO:
-        printf("Enter year: ");
-        scanf("%d", &year);
-        listar_musicas_por_ano(sock_fd, year);
-        break;
-    case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-        printf("Enter year: ");
-        scanf("%d", &year);
-        printf("Enter language: ");
-        scanf(" %s", language);
-        listar_musicas_por_idioma_e_ano(sock_fd, language, year);
-        break;
-    case LISTAR_MUSICAS_POR_TIPO:
-        printf("Enter music type: ");
-        scanf(" %s", music_type);
-        listar_musicas_por_tipo(sock_fd, music_type);
-        break;
-    case LISTAR_INFO_MUSICA_POR_ID:
-        printf("Enter identifier: ");
-        scanf("%d", &identifier);
-        listar_info_musica_por_id(sock_fd, identifier);
-        break;
-    default:
-        listar_todas_infos_musicas(sock_fd);
-        break;
+    char buffer[3000];
+    while(true){
+        bzero(&buffer, sizeof(buffer));
+        print_menu();
+        printf("Enter operation: \n");
+        fgets(buffer, sizeof(buffer), stdin);
+        operation = atoi(buffer);
+        switch (operation)
+            {
+            case CADASTRAR_UMA_MUSICA:
+                printf("Enter identifier: \n");
+                fgets(buffer, sizeof(buffer), stdin);
+                my_music.identifier = atoi(buffer);
+
+                printf("Enter title: \n");
+                fgets(my_music.title, sizeof(my_music.title), stdin);
+                my_music.title[strcspn(my_music.title, "\n")] = '\0'; // Remover a quebra de linha
+
+                printf("Enter performer: \n");
+                fgets(my_music.performer, sizeof(my_music.performer), stdin);
+                my_music.performer[strcspn(my_music.performer, "\n")] = '\0';
+
+                printf("Enter language: \n");
+                fgets(my_music.language, sizeof(my_music.language), stdin);
+                my_music.language[strcspn(my_music.language, "\n")] = '\0';
+
+                printf("Enter music type: \n");
+                fgets(my_music.music_type, sizeof(my_music.music_type), stdin);
+                my_music.music_type[strcspn(my_music.music_type, "\n")] = '\0';
+
+                printf("Enter chorus: \n");
+                fgets(my_music.chorus, sizeof(my_music.chorus), stdin);
+                my_music.chorus[strcspn(my_music.chorus, "\n")] = '\0';
+
+                printf("Enter release year: \n");
+                fgets(buffer, sizeof(buffer), stdin);
+                my_music.release_year = atoi(buffer);
+
+                
+                cadastrar_musica(sock_fd, my_music);
+                break;
+            case REMOVER_UMA_MUSICA:
+                printf("Enter identifier: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                identifier = atoi(buffer);
+                remover_musica(sock_fd, identifier);
+                break;
+            case LISTAR_MUSICAS_POR_ANO:
+                printf("Enter year: ");
+                scanf("%d", &year);
+                listar_musicas_por_ano(sock_fd, year);
+                break;
+            case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
+                printf("Enter year: ");
+                scanf("%d", &year);
+                printf("Enter language: ");
+                scanf(" %s", language);
+                listar_musicas_por_idioma_e_ano(sock_fd, language, year);
+                break;
+            case LISTAR_MUSICAS_POR_TIPO:
+                printf("Enter music type: ");
+                scanf(" %s", music_type);
+                listar_musicas_por_tipo(sock_fd, music_type);
+                break;
+            case LISTAR_INFO_MUSICA_POR_ID:
+                printf("Enter identifier: ");
+                scanf("%d", &identifier);
+                listar_info_musica_por_id(sock_fd, identifier);
+                break;
+            default:
+                listar_todas_infos_musicas(sock_fd);
+                break;
+        }
+        char sendline[MAXLINE];
+        int n;
+        if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
+            printf("str_cli: server terminated prematurely");
+        }
+        else{
+            // printf("%s\n",sendline);
+        }
+
     }
-    
-    str_cli(stdin, sock_fd); /* faz tudo */
+    //str_cli(stdin, sock_fd); /* faz tudo */
 
 }
 int main() {

@@ -40,8 +40,11 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
                     break;
                 case 5:
                     strncpy(music_list[num_songs].chorus, token, CHORUS_LENGTH);
+                    break;
                 case 6:
                     music_list[num_songs].release_year = atoi(token);
+                    break;
+                default:
                     break;
             }
             token = strtok(NULL, ",");
