@@ -89,7 +89,6 @@ void do_client_stuff(int sock_fd) {
                 fgets(buffer, sizeof(buffer), stdin);
                 my_music.release_year = atoi(buffer);
 
-                
                 cadastrar_musica(sock_fd, my_music);
                 break;
             case REMOVER_UMA_MUSICA:
@@ -100,24 +99,27 @@ void do_client_stuff(int sock_fd) {
                 break;
             case LISTAR_MUSICAS_POR_ANO:
                 printf("Enter year: ");
-                scanf("%d", &year);
+                fgets(buffer, sizeof(buffer), stdin);
+                year = atoi(buffer);
                 listar_musicas_por_ano(sock_fd, year);
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-                printf("Enter year: ");
-                scanf("%d", &year);
                 printf("Enter language: ");
-                scanf(" %s", language);
+                fgets(language, sizeof(language), stdin);
+                printf("Enter year: ");
+                fgets(buffer, sizeof(buffer), stdin);
+                year = atoi(buffer);
                 listar_musicas_por_idioma_e_ano(sock_fd, language, year);
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
                 printf("Enter music type: ");
-                scanf(" %s", music_type);
+                fgets(music_type, sizeof(music_type), stdin);
                 listar_musicas_por_tipo(sock_fd, music_type);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
                 printf("Enter identifier: ");
-                scanf("%d", &identifier);
+                fgets(buffer, sizeof(buffer), stdin);
+                identifier = atoi(buffer);
                 listar_info_musica_por_id(sock_fd, identifier);
                 break;
             default:

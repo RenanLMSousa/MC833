@@ -31,7 +31,7 @@ void music_to_string(struct music my_music, char *buffer) {
     strcat(buffer, my_music.language);
     strcat(buffer, "\n");
 
-    strcat(buffer, "Music Type=");
+    strcat(buffer, "MusicType=");
     strcat(buffer, my_music.music_type);
     strcat(buffer, "\n");
 
@@ -39,7 +39,7 @@ void music_to_string(struct music my_music, char *buffer) {
     strcat(buffer, my_music.chorus);
     strcat(buffer, "\n");
 
-    strcat(buffer, "Release Year=");
+    strcat(buffer, "ReleaseYear=");
     sprintf(temp_buffer, "%d\n", my_music.release_year);
     strcat(buffer, temp_buffer);
 }
