@@ -54,7 +54,6 @@ void do_client_stuff(int sock_fd) {
 
     char buffer[3000];
     while(true){
-        bzero(&buffer, sizeof(buffer));
         print_menu();
         printf("Enter operation: \n");
         fgets(buffer, sizeof(buffer), stdin);
@@ -164,11 +163,12 @@ int main() {
     connect(sock_fd, (SA *) &servaddr, sizeof(servaddr));
     
 
-    printf("Connection stablished\n");
+    printf("Connection established\n");
     do_client_stuff(sock_fd);
     
     // Fechando o socket e saindo
     exit(0);
 
-   return 0;
+    
+    return 0;
 }

@@ -10,11 +10,9 @@ void send_all(int __fd, const void *__buf, int __flags){
 
     int bytes_sent;
     char cur_buf[MAXLINE];
-    strcpy(cur_buf,__buf);
-    printf("\n%ld\n",strlen(cur_buf));
+    strcpy(cur_buf, __buf);
     while(strlen(cur_buf) > 0){
-        
-        bytes_sent = send(__fd,cur_buf,strlen(cur_buf),__flags);
+        bytes_sent = send(__fd, cur_buf, strlen(cur_buf), __flags);
         memmove(cur_buf, cur_buf + bytes_sent, strlen(cur_buf) - bytes_sent + 1);
     }
     
@@ -40,7 +38,6 @@ void anexar_header_operacao(char * message , int operacao){
     strcat(strMessage,"#BODY\n");
     strcat(strMessage,strOp);
     strcpy(message, strMessage);
-    bzero(&strMessage, sizeof(strMessage));
 }
 
 // Função para cadastrar uma nova música
@@ -50,9 +47,6 @@ void cadastrar_musica(int sock_fd,struct music nova_musica) {
 
     anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA);
     send_all(sock_fd,strMusic,0);
-
-    bzero(&strMusic, sizeof(strMusic));
-    
 }
 
 // Função para remover uma música a partir de seu identificador

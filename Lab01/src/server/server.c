@@ -25,7 +25,7 @@ void str_echo(int new_fd) {
     char buf[MAXLINE];
 
 again:
-    bzero(&buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
         // Escrever de volta para o cliente
         printf("%s\n",buf);
@@ -33,7 +33,7 @@ again:
             perror("str_echo: write error");
             return;
         }
-
+        memset(buf, 0, sizeof(buf));
     }
 
     if (n < 0 && errno == EINTR)
@@ -82,7 +82,7 @@ int main() {
         // Aceitar conexões entrantes
         
         new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
-        printf("Connection stablished\n");
+        printf("Connection established\n");
 
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
