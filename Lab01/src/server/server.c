@@ -14,13 +14,59 @@
 #include "../music/music.h"
 #include "../external_files/storage_handler.h"
 #include "../external_files/config_handler.h"
+#include "server_operations.h"
 
 #define MAX_SONGS 100
 #define MAXLINE 1000
 #define SA  struct sockaddr
 #define LISTENQ 20
 
-void str_echo(int new_fd) {
+struct _header {
+    int operation;
+    int size;
+};
+
+
+
+struct _header extract_header(char * strHeader){
+
+    struct _header header;
+
+    //Size
+    char *token = strtok(strHeader, "=");
+    token = strtok(NULL, "\n");
+    header.size = atoi(token);
+
+    //Operation
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    header.operation = atoi(token);
+
+    return header;
+}
+
+struct _header read_message(char * message, char * body) {
+
+    struct _header header;
+    char strHeader[300];
+
+    // Atribuir valores ao header
+    char *token = strtok(message, "#HEADER");
+    if (token[0] == '\n') 
+        memmove(token, token+1, strlen(token));  
+    strcpy(strHeader,token);
+    header = extract_header(strHeader);
+
+    // Atribuir valores ao Body
+    token = strtok(NULL, "#BODY");
+    if (token[0] == '\n') 
+        memmove(token, token+1, strlen(token));
+    strcpy(body,token);
+
+    return header;
+}
+
+void do_server_stuff(int new_fd){
     ssize_t n;
     char buf[MAXLINE];
 
@@ -28,8 +74,37 @@ again:
     memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
         // Escrever de volta para o cliente
-        printf("%s\n",buf);
-        if (write(new_fd, buf, n) < 0) {
+        //printf("%s\n",buf);
+        char body[3000];
+        struct _header header = read_message(buf,body);
+        int operation = header.operation;
+        switch (operation)
+            {
+            case CADASTRAR_UMA_MUSICA:            
+             
+                break;
+            case REMOVER_UMA_MUSICA:
+
+                break;
+            case LISTAR_MUSICAS_POR_ANO:
+
+                break;
+            case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
+   
+                break;
+            case LISTAR_MUSICAS_POR_TIPO:
+
+                break;
+            case LISTAR_INFO_MUSICA_POR_ID:
+
+                break;
+            case LISTAR_TODAS_INFOS_MUSICAS:
+
+                break;
+            default:
+                return;
+        }
+        if (write(new_fd, "Message Received.", n) < 0) {
             perror("str_echo: write error");
             return;
         }
@@ -40,13 +115,8 @@ again:
         goto again;
     else if (n < 0)
         perror("str_echo: read error");
-}
+    
 
-void do_server_stuff(int new_fd){
-
-    struct music music_list[MAX_SONGS];
-    int num_songs = read_music_list(music_list, "../../storage/music_list.csv");
-    str_echo(new_fd);
 
 }
 

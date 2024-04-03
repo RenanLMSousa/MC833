@@ -11,7 +11,7 @@ all: $(BUILD_DIR)/client/client $(BUILD_DIR)/server/server
 $(BUILD_DIR)/client/client: $(CLIENT_SRC_DIR)/client.c $(CLIENT_SRC_DIR)/client_operations.c $(BUILD_DIR)/external_files/config_handler.o $(BUILD_DIR)/external_files/storage_handler.o $(BUILD_DIR)/music/music.o | $(BUILD_DIR)/client
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/server/server: $(SERVER_SRC_DIR)/server.c $(BUILD_DIR)/external_files/storage_handler.o $(BUILD_DIR)/external_files/config_handler.o $(BUILD_DIR)/music/music.o | $(BUILD_DIR)/server
+$(BUILD_DIR)/server/server: $(SERVER_SRC_DIR)/server.c $(SERVER_SRC_DIR)/server_operations.c $(BUILD_DIR)/external_files/storage_handler.o $(BUILD_DIR)/external_files/config_handler.o $(BUILD_DIR)/music/music.o | $(BUILD_DIR)/server
 	$(CC) $(CFLAGS) -o $@ $^
 
 $(BUILD_DIR)/external_files/config_handler.o: $(EXTERNAL_SRC_DIR)/config_handler.c $(EXTERNAL_SRC_DIR)/config_handler.h | $(BUILD_DIR)/external_files

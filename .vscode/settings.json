@@ -57,6 +57,7 @@
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "files.associations": {
-    "client_operations.h": "c"
+    "client_operations.h": "c",
+    "system_error": "c"
   }
 }

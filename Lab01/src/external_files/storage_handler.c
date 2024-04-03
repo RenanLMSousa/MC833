@@ -19,7 +19,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
         // Quebra a linha em campos separados por vírgula
-        char *token = strtok(line, ",");
+        char *token = strtok(line, ";");
         int i = 0;
         while (token != NULL) {
             switch (i) {
@@ -47,7 +47,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
                 default:
                     break;
             }
-            token = strtok(NULL, ",");
+            token = strtok(NULL, ";");
             i++;
         }
         num_songs++;
