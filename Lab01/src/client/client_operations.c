@@ -19,25 +19,25 @@ void send_all(int __fd, const void *__buf, int __flags){
 }
 
 void anexar_header_operacao(char * message , int operacao){
-    char strOp[3000];
-    char strMessage[3000] = "";
-    sprintf(strOp, "%d\n", operacao);
-    strcat(strOp, message);
-    strcat(strOp,"\n");
-
-    int msg_size = strlen(strOp);
+    char strOp[3000] = "", strMessage[3000] = "", strOut[3000] = "";
+    
+    strcat(strMessage, message);
+    strcat(strMessage,"\n");
+    int msg_size = strlen(strMessage);
 
     char str_msg_size[100];
     sprintf(str_msg_size, "%d", msg_size);
 
-    strcat(strMessage,"#HEADER\n");
-    strcat(strMessage,"Size=");
-    strcat(strMessage,str_msg_size);
-    strcat(strMessage,"\n");
-    strcat(strMessage,"#BODY\n");
-    strcat(strMessage, "Operation=");
-    strcat(strMessage,strOp);
-    strcpy(message, strMessage);
+    strcat(strOut,"#HEADER\n");
+    strcat(strOut,"Size=");
+    strcat(strOut,str_msg_size);
+    strcat(strOut,"\n");
+    strcat(strOut, "Operation=");
+    sprintf(strOp, "%d\n", operacao);
+    strcat(strOut, strOp);
+    strcat(strOut,"#BODY\n");
+    strcat(strOut, strMessage);
+    strcpy(message, strOut);
 }
 
 // Função para cadastrar uma nova música

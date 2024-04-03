@@ -44,6 +44,7 @@ void print_menu() {
     printf("5 - List all songs of a specific type.\n");
     printf("6 - List all informations of a specific song.\n");
     printf("7 - List all informations of all songs.\n");
+    printf("0 - Close the application.\n");
 }
 
 int read_int(int isId) {
@@ -138,18 +139,20 @@ void do_client_stuff(int sock_fd) {
                 identifier = read_int(1);
                 listar_info_musica_por_id(sock_fd, identifier);
                 break;
-            default:
+            case LISTAR_TODAS_INFOS_MUSICAS:
                 listar_todas_infos_musicas(sock_fd);
                 break;
+            default:
+                return;
         }
         char sendline[MAXLINE];
         int n;
         if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
             printf("str_cli: server terminated prematurely");
         }
-        else{
+        //else{
             // printf("%s\n",sendline);
-        }
+        //}
 
     }
     //str_cli(stdin, sock_fd); /* faz tudo */
@@ -179,12 +182,12 @@ int main() {
 
     // Conectando ao servidor
     connect(sock_fd, (SA *) &servaddr, sizeof(servaddr));
-    
-
     printf("Connection established\n");
+
     do_client_stuff(sock_fd);
     
     // Fechando o socket e saindo
+    printf("Closing connection.\n");
     exit(0);
 
     
