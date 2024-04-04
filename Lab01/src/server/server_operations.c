@@ -6,8 +6,8 @@
 
 #define MAXLINE 3000
 
+// Envia todos os bytes do buffer
 void send_all(int __fd, const void *__buf, int __flags){
-
     int bytes_sent;
     char cur_buf[MAXLINE];
     strcpy(cur_buf, __buf);
@@ -17,44 +17,46 @@ void send_all(int __fd, const void *__buf, int __flags){
     }
 }
 
-// Função para cadastrar uma nova música, retorna 1 se o identificador já estiver sendo usado e 2 se o limite de músicas for atingido
+// Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
 int cadastrar_musica(char * body) {
     struct music my_music, music_list[MAX_SONGS];
     char *token = strtok(body, "=");
-    // Gets identifier
+    // Obtém identificador
     token = strtok(NULL, "\n");
     my_music.identifier = atoi(token);
-    // Gets title
+    // Obtém título
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     strcpy(my_music.title, token);
-    // Gets performer
+    // Obtém intérprete
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     strcpy(my_music.performer, token);
-    // Gets language
+    // Obtém linguagem
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     strcpy(my_music.language, token);
-    // Gets music type
+    // Obtém tipo de música
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     strcpy(my_music.music_type, token);
-    // Gets chorus
+    // Obtém refrão
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     strcpy(my_music.chorus, token);
-    // Gets release year
+    // Obtém ano de lançamento de lançamento
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     my_music.release_year = atoi(token);
     
     int n = read_music_list(music_list, FILEPATH);
+    // Verifica se o identificador já está em uso
     for (int i = 0; i < n; i++) {
         if (my_music.identifier == music_list[i].identifier) {
             return 1;
         }
     }
+    // Verifica se o limite máximo de músicas não foi alcançado
     if (n < MAX_SONGS) {
         music_list[n] = my_music;
         write_music_list(music_list, n + 1, FILEPATH);
@@ -65,16 +67,17 @@ int cadastrar_musica(char * body) {
     }
 }
 
-// Função para remover uma música a partir de seu identificador, retorna 1 se não existe música com esse identificador
+// Remove uma música a partir de seu identificador, retorna 1 se não existe música com esse identificador
 int remover_musica(char * body) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int identifier;
 
-    // Gets identifier
+    // Obtém identificador
     token = strtok(NULL, "\n");
     identifier = atoi(token);
 
+    // Identifica índice da música que vai ser removida
     int found = 0, remove_i;
     int n = read_music_list(music_list, FILEPATH);
     for (int i = 0; i < n; i++) {
@@ -85,6 +88,7 @@ int remover_musica(char * body) {
         }
     }
 
+    // Verifica se o identificador foi encontrado, se sim remove a musica da lista
     if (found == 1) {
         struct music new_list[MAX_SONGS];
         int j = 0;
@@ -95,19 +99,20 @@ int remover_musica(char * body) {
             }
         }
         n = j;
+        // Sobrescreve no arquivo
         write_music_list(new_list, n, FILEPATH);
         return 0;
     }
     return 1;
 }
 
-// Função para listar todas as músicas lançadas em um determinado ano, retorna o número de músicas encontradas
+// Lista todas as músicas lançadas em um determinado ano, retorna o número de músicas encontradas
 int listar_musicas_por_ano(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int year;
 
-    // Gets year
+    // Obtém ano de lançamento
     token = strtok(NULL, "\n");
     year = atoi(token);
 
@@ -123,17 +128,17 @@ int listar_musicas_por_ano(char * body, char * output) {
     return counter;
 }
 
-// Função para listar todas as músicas em um dado idioma lançadas em um certo ano, retorna o número de músicas encontradas
+// Lista todas as músicas em um dado idioma lançadas em um certo ano, retorna o número de músicas encontradas
 int listar_musicas_por_idioma_e_ano(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     char language[LANGUAGE_LENGTH];
     int year;
 
-    // Gets language
+    // Obtém linguagem
     token = strtok(NULL, "\n");
     strcpy(language, token);
-    // Gets year
+    // Obtém ano de lançamento
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     year = atoi(token);
@@ -150,13 +155,13 @@ int listar_musicas_por_idioma_e_ano(char * body, char * output) {
     return counter;
 }
 
-// Função para listar todas as músicas de um certo tipo, retorna o número de músicas encontradas
+// Lista todas as músicas de um certo tipo, retorna o número de músicas encontradas
 int listar_musicas_por_tipo(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     char type[MUSIC_TYPE_LENGTH];
 
-    // Gets type
+    // Obtém tipo de música
     token = strtok(NULL, "\n");
     strcpy(type, token);
 
@@ -172,13 +177,13 @@ int listar_musicas_por_tipo(char * body, char * output) {
     return counter;
 }
 
-// Função para listar todas as informações de uma música dado o seu identificador, retorna 1 se não existe música com esse identificador
+// Lista todas as informações de uma música dado o seu identificador, retorna 1 se não existe música com esse identificador
 int listar_info_musica_por_id(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int identifier;
 
-    // Gets identifier
+    // Obtém identificador
     token = strtok(NULL, "\n");
     identifier = atoi(token);
 
@@ -187,15 +192,15 @@ int listar_info_musica_por_id(char * body, char * output) {
         if (music_list[i].identifier == identifier) {
             music_to_string(music_list[i], output);
             strcat(output, "\n");
+            // Como o identificador é único, retornamos
             return 0;
         }
     }
     return 1;
 }
 
-// Função para listar todas as informações de todas as músicas
+// Lista todas as informações de todas as músicas, retorna o número de músicas
 int listar_todas_infos_musicas(char * output) {
-
     struct music music_list[MAX_SONGS];
     int n = read_music_list(music_list,FILEPATH);
     

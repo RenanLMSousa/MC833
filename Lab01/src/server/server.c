@@ -1,13 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
 
@@ -21,6 +14,7 @@
 #define SA  struct sockaddr
 #define LISTENQ 20
 
+// Estrutura privada para guardar informações do cabeçalho
 struct _header {
     int operation;
     int size;
@@ -28,20 +22,19 @@ struct _header {
 };
 
 struct _header extract_header(char * strHeader){
-
     struct _header header;
 
-    //Size
+    // Tamanho
     char *token = strtok(strHeader, "=");
     token = strtok(NULL, "\n");
     header.size = atoi(token);
 
-    //Admin
+    // Admin
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     header.admin = atoi(token);
 
-    //Operation
+    // Operação
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     header.operation = atoi(token);
@@ -50,7 +43,6 @@ struct _header extract_header(char * strHeader){
 }
 
 struct _header read_message(char * _message, char * body) {
-
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[1000] = "";
     char strBody[1000] = "";
@@ -78,10 +70,8 @@ struct _header read_message(char * _message, char * body) {
     }
 
     // Exibindo o conteúdo separado
-
     strcpy(body,strBody);
     return extract_header(strHeader);
-
 }
 
 void do_server_stuff(int new_fd){
@@ -92,15 +82,16 @@ void do_server_stuff(int new_fd){
 again:
     memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
-        // Escrever de volta para o cliente
         char body[3000];
         char strMusic[10000];
         struct _header header = read_message(buf,body);
         int operation = header.operation, admin = header.admin, counter;
+        // Garantir que o buffer está limpo
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
-            case CADASTRAR_UMA_MUSICA:            
+            case CADASTRAR_UMA_MUSICA:       
+                // Verifica se o usuário é admin     
                 if (admin == 1) {
                     error = cadastrar_musica(body);
                     if (error == 1) {
@@ -130,6 +121,7 @@ again:
                 }
                 break;
             case REMOVER_UMA_MUSICA:
+                // Verifica se o usuário é admin  
                 if (admin == 1) {
                     error = remover_musica(body);
                     if (error == 1) {
@@ -151,7 +143,6 @@ again:
                         return;
                     }
                 }
-
                 break;
             case LISTAR_MUSICAS_POR_ANO:
                 counter = listar_musicas_por_ano(body, strMusic);
@@ -223,9 +214,6 @@ again:
         goto again;
     else if (n < 0)
         perror("str_echo: read error");
-    
-
-
 }
 
 
