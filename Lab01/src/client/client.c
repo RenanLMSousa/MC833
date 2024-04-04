@@ -178,7 +178,7 @@ int main() {
     servaddr.sin_port = htons(atoi(serverConfig.porta));
     servaddr.sin_addr.s_addr = htons(atoi(serverConfig.ip));
     printf("%d\n",servaddr.sin_addr.s_addr);
-    inet_pton(AF_INET, serverConfig.porta, &servaddr.sin_addr);
+    inet_pton(AF_INET, serverConfig.ip, &servaddr.sin_addr);
 
     // Conectando ao servidor
     connect(sock_fd, (SA *) &servaddr, sizeof(servaddr));
