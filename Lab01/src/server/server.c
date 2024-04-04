@@ -50,18 +50,21 @@ struct _header read_message(char * message, char * body) {
     struct _header header;
     char strHeader[300];
 
-    // Atribuir valores ao header
+    // Separar header
     char *token = strtok(message, "#HEADER");
     if (token[0] == '\n') 
         memmove(token, token+1, strlen(token));  
     strcpy(strHeader,token);
-    header = extract_header(strHeader);
 
     // Atribuir valores ao Body
     token = strtok(NULL, "#BODY");
-    if (token[0] == '\n') 
+    if (token[0] == '\n') {
         memmove(token, token+1, strlen(token));
+    }
     strcpy(body,token);
+
+    // Atribuir valores ao Header
+    header = extract_header(strHeader);
 
     return header;
 }
@@ -81,7 +84,7 @@ again:
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:            
-             
+                cadastrar_musica(new_fd, body);
                 break;
             case REMOVER_UMA_MUSICA:
 
@@ -153,7 +156,6 @@ int main() {
         
         new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
         printf("Connection established\n");
-
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
             close(sock_fd); /* fechar o socket de escuta */

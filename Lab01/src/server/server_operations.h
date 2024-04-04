@@ -28,7 +28,7 @@
 #define LISTAR_TODAS_INFOS_MUSICAS 7
 
 // Função para cadastrar uma nova música
-void cadastrar_musica(int sock_fd, struct music nova_musica);
+void cadastrar_musica(int sock_fd, char * body);
 
 // Função para remover uma música a partir de seu identificador
 void remover_musica(int sock_fd, int identifier);

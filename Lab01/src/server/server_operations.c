@@ -7,7 +7,8 @@
 #define MAXLINE 3000
 
 // Função para cadastrar uma nova música
-void cadastrar_musica(int sock_fd,struct music nova_musica) {
+void cadastrar_musica(int sock_fd, char * body) {
+    char *token = strtok(body, "=");
 }
 
 // Função para remover uma música a partir de seu identificador
