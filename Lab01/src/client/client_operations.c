@@ -41,7 +41,7 @@ void anexar_header_operacao(char * message , int operacao){
 }
 
 // Função para cadastrar uma nova música
-void cadastrar_musica(int sock_fd,struct music nova_musica) {
+void cadastrar_musica(int sock_fd, struct music nova_musica) {
     char strMusic[2000];
     music_to_string(nova_musica,strMusic);
 

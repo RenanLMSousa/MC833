@@ -58,7 +58,8 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     return num_songs;
 }
 
-void write_music_list(struct music music_list[MAX_SONGS], const char *filename) {
+// Função para escrever as musicas de uma lista no arquivo
+void write_music_list(struct music music_list[MAX_SONGS], int n, const char *filename) {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo %s\n", filename);
@@ -66,17 +67,15 @@ void write_music_list(struct music music_list[MAX_SONGS], const char *filename) 
     }
 
     // Escreve cada música na lista no arquivo CSV
-    for (int i = 0; i < MAX_SONGS; i++) {
-        if (music_list[i].identifier != 0) { // Verifica se o identificador é diferente de zero, assumindo que identificadores válidos são maiores que zero
-            fprintf(file, "%d;%s;%s;%s;%s;%s;%d\n",
-                    music_list[i].identifier,
-                    music_list[i].title,
-                    music_list[i].performer,
-                    music_list[i].language,
-                    music_list[i].music_type,
-                    music_list[i].chorus,
-                    music_list[i].release_year);
-        }
+    for (int i = 0; i < n; i++) {
+        fprintf(file, "%d;%s;%s;%s;%s;%s;%d\n",
+                music_list[i].identifier,
+                music_list[i].title,
+                music_list[i].performer,
+                music_list[i].language,
+                music_list[i].music_type,
+                music_list[i].chorus,
+                music_list[i].release_year);
     }
 
     fclose(file);

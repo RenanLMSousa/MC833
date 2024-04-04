@@ -151,7 +151,7 @@ void do_client_stuff(int sock_fd) {
             printf("str_cli: server terminated prematurely");
         }
         else{
-            printf("%s\n",sendline);
+            printf("\n%s\n",sendline);
         }
         
 

@@ -26,8 +26,6 @@ struct _header {
     int size;
 };
 
-
-
 struct _header extract_header(char * strHeader){
 
     struct _header header;
@@ -83,44 +81,117 @@ struct _header read_message(char * _message, char * body) {
 void do_server_stuff(int new_fd){
     ssize_t n;
     char buf[MAXLINE];
-    char strMusic[10000] = "";
+    int error;
 
 again:
     memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
         // Escrever de volta para o cliente
         char body[3000];
+        char strMusic[10000];
         struct _header header = read_message(buf,body);
-        int operation = header.operation;
+        int operation = header.operation, counter;
+        memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:            
-                cadastrar_musica(body);
+                error = cadastrar_musica(body);
+                if (error == 1) {
+                    if (write(new_fd, "This id is already in use.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else if (error == 2) {
+                    if (write(new_fd, "You have reached the limit number of songs.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    if (write(new_fd, "Song registered.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
                 break;
             case REMOVER_UMA_MUSICA:
-                remover_musica(body);
+                error = remover_musica(body);
+                if (error == 1) {
+                    if (write(new_fd, "Song not found.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    if (write(new_fd, "Song deleted.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
                 break;
             case LISTAR_MUSICAS_POR_ANO:
-                listar_musicas_por_ano(body);
+                counter = listar_musicas_por_ano(body, strMusic);
+                if (counter == 0) {
+                    if (write(new_fd, "0 songs found.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else { 
+                    send_all(new_fd, strMusic, 0);
+                }
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-                listar_musicas_por_idioma_e_ano(body);
+                counter = listar_musicas_por_idioma_e_ano(body, strMusic);
+                if (counter == 0) {
+                    if (write(new_fd, "0 songs found.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    send_all(new_fd, strMusic, 0);
+                }
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
-                listar_musicas_por_tipo(body);
+                counter = listar_musicas_por_tipo(body, strMusic);
+                if (counter == 0) {
+                    if (write(new_fd, "0 songs found.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    send_all(new_fd, strMusic, 0);
+                }
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
-                listar_info_musica_por_id(body);
+                error = listar_info_musica_por_id(body, strMusic);
+                if (error == 1) {
+                    if (write(new_fd, "Song not found.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    send_all(new_fd, strMusic, 0);
+                }
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(body, strMusic);
+                counter = listar_todas_infos_musicas(body, strMusic);
+                if (counter == 0) {
+                    if (write(new_fd, "No songs to list.\n", n) < 0) {
+                        perror("str_echo: write error");
+                        return;
+                    }
+                }
+                else {
+                    send_all(new_fd, strMusic, 0);
+                }
                 break;
             default:
                 return;
-        }
-        if (write(new_fd, "Message Received.", n) < 0) {
-            perror("str_echo: write error");
-            return;
         }
         memset(buf, 0, sizeof(buf));
     }
