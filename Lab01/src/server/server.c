@@ -24,6 +24,7 @@
 struct _header {
     int operation;
     int size;
+    int admin;
 };
 
 struct _header extract_header(char * strHeader){
@@ -34,6 +35,11 @@ struct _header extract_header(char * strHeader){
     char *token = strtok(strHeader, "=");
     token = strtok(NULL, "\n");
     header.size = atoi(token);
+
+    //Admin
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    header.admin = atoi(token);
 
     //Operation
     token = strtok(NULL, "=");
@@ -90,45 +96,62 @@ again:
         char body[3000];
         char strMusic[10000];
         struct _header header = read_message(buf,body);
-        int operation = header.operation, counter;
+        int operation = header.operation, admin = header.admin, counter;
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:            
-                error = cadastrar_musica(body);
-                if (error == 1) {
-                    if (write(new_fd, "This id is already in use.\n", n) < 0) {
-                        perror("str_echo: write error");
-                        return;
+                if (admin == 1) {
+                    error = cadastrar_musica(body);
+                    if (error == 1) {
+                        if (write(new_fd, "This id is already in use.\n", n) < 0) {
+                            perror("str_echo: write error");
+                            return;
+                        }
                     }
-                }
-                else if (error == 2) {
-                    if (write(new_fd, "You have reached the limit number of songs.\n", n) < 0) {
-                        perror("str_echo: write error");
-                        return;
+                    else if (error == 2) {
+                        if (write(new_fd, "You have reached the limit number of songs.\n", n) < 0) {
+                            perror("str_echo: write error");
+                            return;
+                        }
+                    }
+                    else {
+                        if (write(new_fd, "Song registered.\n", n) < 0) {
+                            perror("str_echo: write error");
+                            return;
+                        }
                     }
                 }
                 else {
-                    if (write(new_fd, "Song registered.\n", n) < 0) {
+                    if (write(new_fd, "This operation is not available to regular users.\n", n) < 0) {
                         perror("str_echo: write error");
                         return;
                     }
                 }
                 break;
             case REMOVER_UMA_MUSICA:
-                error = remover_musica(body);
-                if (error == 1) {
-                    if (write(new_fd, "Song not found.\n", n) < 0) {
-                        perror("str_echo: write error");
-                        return;
+                if (admin == 1) {
+                    error = remover_musica(body);
+                    if (error == 1) {
+                        if (write(new_fd, "Song not found.\n", n) < 0) {
+                            perror("str_echo: write error");
+                            return;
+                        }
+                    }
+                    else {
+                        if (write(new_fd, "Song deleted.\n", n) < 0) {
+                            perror("str_echo: write error");
+                            return;
+                        }
                     }
                 }
                 else {
-                    if (write(new_fd, "Song deleted.\n", n) < 0) {
+                    if (write(new_fd, "This operation is not available to regular users.\n", n) < 0) {
                         perror("str_echo: write error");
                         return;
                     }
                 }
+
                 break;
             case LISTAR_MUSICAS_POR_ANO:
                 counter = listar_musicas_por_ano(body, strMusic);
@@ -229,7 +252,6 @@ int main() {
     // Associação do socket ao endereço do servidor
     bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
     // Definição do socket para escutar conexões
-    printf("%d\n",servaddr.sin_addr.s_addr);
     listen(sock_fd, LISTENQ);
 
     for (;;) {

@@ -35,10 +35,39 @@ void str_cli(FILE *fp, int sock_fd) {
     }
 }*/
 
+int run_admin() {
+    char choice[20];
+    printf("Do you want to execute as admin? (yes/no): ");
+    fgets(choice, sizeof(choice), stdin);
+
+    // Remove trailing newline character if present
+    choice[strcspn(choice, "\n")] = '\0';
+
+    // Convert the input to lowercase for case-insensitive comparison
+    for (int i = 0; choice[i]; i++) {
+        choice[i] = tolower(choice[i]);
+    }
+
+    // Check if the user wants to execute as admin
+    if (strcmp(choice, "yes") == 0 || strcmp(choice, "y") == 0) {
+        printf("Executing as admin\n\n");
+        return 1;
+    } 
+    else if (strcmp(choice, "no") == 0 || strcmp(choice, "n") == 0) {
+        printf("Executing as regular user\n\n");
+        return 0;
+    } 
+    else {
+        printf("Invalid input. Please enter 'yes' or 'no'.\n");
+        return -1;
+    }
+
+}
+
 void print_menu() {
     printf("Choose your operation by entering one of the following numbers: \n");
-    printf("1 - Register a new song.\n");
-    printf("2 - Remove a song.\n");
+    printf("1 - Register a new song (only admin).\n");
+    printf("2 - Remove a song (only admin).\n");
     printf("3 - List all songs released in a specific year.\n");
     printf("4 - List all songs of a specific language released in a specific year.\n");
     printf("5 - List all songs of a specific type.\n");
@@ -76,13 +105,19 @@ int read_int(int isId) {
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
     struct music my_music;
-    int operation, identifier, year;
-    char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH], buffer[3000];
-    while(true){
+    int admin = -1, operation, identifier, year;
+    char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH], sendline[MAXLINE], buffer[3000];
+    
+    while (admin == -1) {
+        admin = run_admin();
+    }
+    
+    while(true) {
         print_menu();
         printf("Enter operation: \n");
         fgets(buffer, sizeof(buffer), stdin);
         operation = atoi(buffer);
+        memset(sendline, 0, sizeof(sendline));
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:
@@ -110,17 +145,17 @@ void do_client_stuff(int sock_fd) {
 
                 my_music.release_year = read_int(0);
 
-                cadastrar_musica(sock_fd, my_music);
+                cadastrar_musica(sock_fd, my_music, admin);
                 break;
             case REMOVER_UMA_MUSICA:
                 identifier = read_int(1);
-                remover_musica(sock_fd, identifier);
+                remover_musica(sock_fd, identifier, admin);
                 break;
             case LISTAR_MUSICAS_POR_ANO:
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_ano(sock_fd, year);
+                listar_musicas_por_ano(sock_fd, year, admin);
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
                 printf("Enter language: ");
@@ -128,24 +163,24 @@ void do_client_stuff(int sock_fd) {
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_idioma_e_ano(sock_fd, language, year);
+                listar_musicas_por_idioma_e_ano(sock_fd, language, year, admin);
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
                 printf("Enter music type: ");
                 fgets(music_type, sizeof(music_type), stdin);
-                listar_musicas_por_tipo(sock_fd, music_type);
+                listar_musicas_por_tipo(sock_fd, music_type, admin);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
                 identifier = read_int(1);
-                listar_info_musica_por_id(sock_fd, identifier);
+                listar_info_musica_por_id(sock_fd, identifier, admin);
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(sock_fd);
+                listar_todas_infos_musicas(sock_fd, admin);
                 break;
             default:
                 return;
         }
-        char sendline[MAXLINE];
+
         int n;
         if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
             printf("str_cli: server terminated prematurely");
@@ -159,6 +194,7 @@ void do_client_stuff(int sock_fd) {
     //str_cli(stdin, sock_fd); /* faz tudo */
 
 }
+
 int main() {
     int sock_fd;
     struct sockaddr_in servaddr;
@@ -178,7 +214,6 @@ int main() {
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(atoi(serverConfig.porta));
     servaddr.sin_addr.s_addr = htons(atoi(serverConfig.ip));
-    printf("%d\n",servaddr.sin_addr.s_addr);
     inet_pton(AF_INET, serverConfig.ip, &servaddr.sin_addr);
 
     // Conectando ao servidor
