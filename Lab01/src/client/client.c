@@ -1,54 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h>
 #include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
 #include <ctype.h>
 
 #include "client_operations.h"
 #include "../external_files/config_handler.h"
 
 #define true 1
-#define SA  struct sockaddr
+#define SA struct sockaddr
 #define LISTENQ 20
 #define MAXLINE 1000
 
-/*
-void str_cli(FILE *fp, int sock_fd) {
-    char sendline[MAXLINE];
-    ssize_t n;
-    while (fgets(sendline, MAXLINE, fp) != NULL) {
-        send_all(sock_fd,sendline,0);
-        if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
-            printf("str_cli: server terminated prematurely");
-        }
-        else{
-            printf("%s\n",sendline);
-        }
-    }
-}*/
-
+// Pergunta se o usuário quer rodar como administrador e retorna o resultado
 int run_admin() {
     char choice[20];
     printf("Do you want to execute as admin? (yes/no): ");
     fgets(choice, sizeof(choice), stdin);
 
-    // Remove trailing newline character if present
+    // Remove caracter de nova linha se houver um
     choice[strcspn(choice, "\n")] = '\0';
 
-    // Convert the input to lowercase for case-insensitive comparison
+    // Garante que o input funciona em caixa alta ou não
     for (int i = 0; choice[i]; i++) {
         choice[i] = tolower(choice[i]);
     }
 
-    // Check if the user wants to execute as admin
     if (strcmp(choice, "yes") == 0 || strcmp(choice, "y") == 0) {
         printf("Executing as admin\n\n");
         return 1;
@@ -58,12 +38,13 @@ int run_admin() {
         return 0;
     } 
     else {
+        // Retorna -1 para continuar perguntando
         printf("Invalid input. Please enter 'yes' or 'no'.\n");
         return -1;
     }
-
 }
 
+// Imprime menu de funções para guiar o usuário
 void print_menu() {
     printf("Choose your operation by entering one of the following numbers: \n");
     printf("1 - Register a new song (only admin).\n");
@@ -76,6 +57,7 @@ void print_menu() {
     printf("0 - Close the application.\n");
 }
 
+// Pega entrada do usuário e verifica se é inteira
 int read_int(int isId) {
     int valid_input = 0, i, integer;
     char buffer[3000];
@@ -102,12 +84,14 @@ int read_int(int isId) {
     return integer;
 }
 
+// Faz a lógica da interação entre cliente e servidor
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
     struct music my_music;
     int admin = -1, operation, identifier, year;
     char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH], sendline[MAXLINE], buffer[3000];
     
+    // Garante que o usuário escolha entre ser ou não admin
     while (admin == -1) {
         admin = run_admin();
     }
@@ -181,18 +165,15 @@ void do_client_stuff(int sock_fd) {
                 return;
         }
 
+        // Recebe a resposta do servidor após a operação
         int n;
         if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
             printf("str_cli: server terminated prematurely");
         }
-        else{
+        else {
             printf("\n%s\n",sendline);
         }
-        
-
     }
-    //str_cli(stdin, sock_fd); /* faz tudo */
-
 }
 
 int main() {
@@ -203,8 +184,6 @@ int main() {
     printf("Reading configs\n");
     serverConfig =  ler_configuracao("../../server.config");
     printf("Requesting to IP:%s | PORT: %s\n",serverConfig.ip,serverConfig.porta);
-
-
     
     // Criando o socket
     sock_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -226,6 +205,5 @@ int main() {
     printf("Closing connection.\n");
     exit(0);
 
-    
     return 0;
 }

@@ -5,7 +5,7 @@
 
 #define MAX_LINE_LENGTH 256
 
-// Função para ler as músicas do arquivo e armazená-las em uma lista
+// Lê as músicas do arquivo e as armazena em uma lista, retorna o número de músicas lidas
 int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
@@ -18,7 +18,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     // Lê cada linha do arquivo
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
-        // Quebra a linha em campos separados por vírgula
+        // Quebra a linha em campos separados por ponto e vírgula
         char *token = strtok(line, ";");
         int i = 0;
         while (token != NULL) {
@@ -58,7 +58,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     return num_songs;
 }
 
-// Função para escrever as musicas de uma lista no arquivo
+// Escreve as musicas de uma lista no arquivo
 void write_music_list(struct music music_list[MAX_SONGS], int n, const char *filename) {
     FILE *file = fopen(filename, "w");
     if (file == NULL) {

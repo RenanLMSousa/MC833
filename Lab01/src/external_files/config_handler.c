@@ -5,6 +5,7 @@
 
 #define MAX_LINE_LENGTH 100
 
+// Percorre o arquivo de configuração e cria um objeto com as informações relevantes
 Configuracao ler_configuracao(const char *filename) {
     Configuracao config;
     FILE *file = fopen(filename, "r");

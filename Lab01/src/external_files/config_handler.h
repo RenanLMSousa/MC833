@@ -8,6 +8,7 @@ typedef struct {
     char ip[MAX_IP_NAME];
 } Configuracao;
 
+// Percorre o arquivo de configuração e cria um objeto com as informações relevantes
 Configuracao ler_configuracao(const char *filename);
 
 #endif /* CONFIG_H */
