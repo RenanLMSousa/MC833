@@ -15,7 +15,7 @@ void print_music_details(struct music my_music) {
 
 void music_to_string(struct music my_music, char *buffer) {
     strcpy(buffer, "Identifier=");
-    char temp_buffer[20]; // buffer temporário para converter int para string
+    char temp_buffer[200]; // buffer temporário para converter int para string
     sprintf(temp_buffer, "%d\n", my_music.identifier);
     strcat(buffer, temp_buffer);
 

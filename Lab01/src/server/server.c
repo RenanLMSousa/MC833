@@ -45,28 +45,40 @@ struct _header extract_header(char * strHeader){
     return header;
 }
 
-struct _header read_message(char * message, char * body) {
+struct _header read_message(char * _message, char * body) {
 
     struct _header header;
-    char strHeader[300];
+    // Variáveis para armazenar o conteúdo do #HEADER e #BODY
+    char strHeader[1000] = "";
+    char strBody[1000] = "";
 
-    // Separar header
-    char *token = strtok(message, "#HEADER");
-    if (token[0] == '\n') 
-        memmove(token, token+1, strlen(token));  
-    strcpy(strHeader,token);
+    // Variável para controlar se estamos lendo o cabeçalho ou o corpo
+    int readingBody = 0;
 
-    // Atribuir valores ao Body
-    token = strtok(NULL, "#BODY");
-    if (token[0] == '\n') {
-        memmove(token, token+1, strlen(token));
+    // Separando o conteúdo
+    char *token = strtok(_message, "\n");
+    while (token != NULL) {
+        if (strcmp(token, "#BODY") == 0) {
+            readingBody = 1;
+        } else if (strcmp(token, "#HEADER") == 0) {
+            readingBody = 0;
+        } else {
+            if (readingBody) {
+                strcat(strBody, token);
+                strcat(strBody, "\n");
+            } else {
+                strcat(strHeader, token);
+                strcat(strHeader, "\n");
+            }
+        }
+        token = strtok(NULL, "\n");
     }
-    strcpy(body,token);
 
-    // Atribuir valores ao Header
-    header = extract_header(strHeader);
+    // Exibindo o conteúdo separado
 
-    return header;
+    strcpy(body,strBody);
+    return extract_header(strHeader);
+
 }
 
 void do_server_stuff(int new_fd){
@@ -77,7 +89,6 @@ again:
     memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
         // Escrever de volta para o cliente
-        //printf("%s\n",buf);
         char body[3000];
         struct _header header = read_message(buf,body);
         int operation = header.operation;
@@ -87,22 +98,22 @@ again:
                 cadastrar_musica(new_fd, body);
                 break;
             case REMOVER_UMA_MUSICA:
-
+                remover_musica(new_fd, body);
                 break;
             case LISTAR_MUSICAS_POR_ANO:
-
+                listar_musicas_por_ano(new_fd, body);
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-   
+                listar_musicas_por_idioma_e_ano(new_fd, body);
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
-
+                listar_musicas_por_tipo(new_fd, body);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
-
+                listar_info_musica_por_id(new_fd, body);
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-
+                listar_todas_infos_musicas(new_fd, body);
                 break;
             default:
                 return;
