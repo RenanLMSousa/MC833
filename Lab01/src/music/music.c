@@ -13,7 +13,7 @@ void print_music_details(struct music my_music) {
     printf("Release Year: %d\n", my_music.release_year);
 }
 
-void music_to_string(struct music my_music, char *buffer) {
+void music_to_string_reduced(struct music my_music, char * buffer) {
     strcpy(buffer, "Identifier=");
     char temp_buffer[200]; // buffer temporário para converter int para string
     sprintf(temp_buffer, "%d\n", my_music.identifier);
@@ -26,6 +26,10 @@ void music_to_string(struct music my_music, char *buffer) {
     strcat(buffer, "Performer=");
     strcat(buffer, my_music.performer);
     strcat(buffer, "\n");
+}
+
+void music_to_string(struct music my_music, char *buffer) {
+    music_to_string_reduced(my_music, buffer);
 
     strcat(buffer, "Language=");
     strcat(buffer, my_music.language);
@@ -40,6 +44,7 @@ void music_to_string(struct music my_music, char *buffer) {
     strcat(buffer, "\n");
 
     strcat(buffer, "ReleaseYear=");
+    char temp_buffer[200]; // buffer temporário para converter int para string
     sprintf(temp_buffer, "%d\n", my_music.release_year);
     strcat(buffer, temp_buffer);
 }

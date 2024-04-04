@@ -116,7 +116,7 @@ int listar_musicas_por_ano(char * body, char * output) {
     int n = read_music_list(music_list, FILEPATH);
     for (int i = 0; i < n; i++) {
         if (music_list[i].release_year == year) {
-            music_to_string(music_list[i], strMusic);
+            music_to_string_reduced(music_list[i], strMusic);
             strcat(output, strMusic);
             strcat(output, "\n");
             counter++;
@@ -143,8 +143,8 @@ int listar_musicas_por_idioma_e_ano(char * body, char * output) {
     int counter = 0;
     int n = read_music_list(music_list, FILEPATH);
     for (int i = 0; i < n; i++) {
-        if (music_list[i].release_year == year && strcmp(music_list[i].language, language) == 0) {
-            music_to_string(music_list[i], strMusic);
+        if ((music_list[i].release_year == year) && (strcmp(music_list[i].language, language)) == 0) {
+            music_to_string_reduced(music_list[i], strMusic);
             strcat(output, strMusic);
             strcat(output, "\n");
             counter++;
@@ -167,7 +167,7 @@ int listar_musicas_por_tipo(char * body, char * output) {
     int n = read_music_list(music_list, FILEPATH);
     for (int i = 0; i < n; i++) {
         if (strcmp(music_list[i].music_type, type) == 0)  {
-            music_to_string(music_list[i], strMusic);
+            music_to_string_reduced(music_list[i], strMusic);
             strcat(output, strMusic);
             strcat(output, "\n");
             counter++;
@@ -199,7 +199,7 @@ int listar_info_musica_por_id(char * body, char * output) {
 }
 
 // Função para listar todas as informações de todas as músicas
-int listar_todas_infos_musicas(char * body, char * output) {
+int listar_todas_infos_musicas(char * output) {
 
     struct music music_list[MAX_SONGS];
     char strMusic[3000];

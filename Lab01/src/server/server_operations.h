@@ -46,6 +46,6 @@ int listar_musicas_por_tipo(char * body, char * output);
 int listar_info_musica_por_id(char * body, char * output);
 
 // Função para listar todas as informações de todas as músicas, retorna o número de músicas
-int listar_todas_infos_musicas(char * body, char * output);
+int listar_todas_infos_musicas(char * output);
 
 #endif /* SERVER_OPERATIONS_H */

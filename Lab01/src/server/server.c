@@ -179,7 +179,7 @@ again:
                 }
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                counter = listar_todas_infos_musicas(body, strMusic);
+                counter = listar_todas_infos_musicas(strMusic);
                 if (counter == 0) {
                     if (write(new_fd, "No songs to list.\n", n) < 0) {
                         perror("str_echo: write error");

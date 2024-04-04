@@ -17,7 +17,7 @@ struct music {
     int release_year;
 };
 
-// Function prototype to print music details
 void print_music_details(struct music my_music);
+void music_to_string_reduced(struct music my_music, char * buffer);
 void music_to_string(struct music my_music, char *buffer);
 #endif /* MUSIC_H */
