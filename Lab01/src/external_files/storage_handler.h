@@ -7,4 +7,5 @@
 
 // Função para ler as músicas do arquivo e armazená-las em uma lista
 int read_music_list(struct music music_list[MAX_SONGS], const char *filename);
+void write_music_list(struct music music_list[MAX_SONGS], const char *filename);
 #endif /* STORAGE_HANDLER_H */

@@ -46,6 +46,6 @@ void listar_musicas_por_tipo(char * body);
 void listar_info_musica_por_id(char * body);
 
 // Função para listar todas as informações de todas as músicas
-void listar_todas_infos_musicas(char * body);
+void listar_todas_infos_musicas(char * body, char * output);
 
 #endif /* SERVER_OPERATIONS_H */

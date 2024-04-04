@@ -83,6 +83,7 @@ struct _header read_message(char * _message, char * body) {
 void do_server_stuff(int new_fd){
     ssize_t n;
     char buf[MAXLINE];
+    char strMusic[10000] = "";
 
 again:
     memset(buf, 0, sizeof(buf));
@@ -112,7 +113,7 @@ again:
                 listar_info_musica_por_id(body);
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(body);
+                listar_todas_infos_musicas(body, strMusic);
                 break;
             default:
                 return;

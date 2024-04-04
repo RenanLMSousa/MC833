@@ -38,6 +38,8 @@ void cadastrar_musica(char * body) {
     token = strtok(NULL, "\n");
     my_music.release_year = atoi(token);
     print_music_details(my_music);
+
+
 }
 
 // Função para remover uma música a partir de seu identificador
@@ -96,5 +98,16 @@ void listar_info_musica_por_id(char * body) {
 }
 
 // Função para listar todas as informações de todas as músicas
-void listar_todas_infos_musicas(char * body) {
+void listar_todas_infos_musicas(char * body, char * output) {
+
+    struct music music_list[MAX_SONGS];
+    char strMusic[3000];
+    int n = read_music_list(music_list,"../../storage/music_list.csv");
+    
+    for(int i =0 ; i < n; i++){
+        music_to_string(music_list[i], strMusic);
+        strcat(output, strMusic);
+        strcat(output, "\n");
+    }
+    printf("%s\n", output);
 }

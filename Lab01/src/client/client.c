@@ -150,9 +150,10 @@ void do_client_stuff(int sock_fd) {
         if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
             printf("str_cli: server terminated prematurely");
         }
-        //else{
-            // printf("%s\n",sendline);
-        //}
+        else{
+            printf("%s\n",sendline);
+        }
+        
 
     }
     //str_cli(stdin, sock_fd); /* faz tudo */
