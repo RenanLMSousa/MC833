@@ -47,7 +47,6 @@ struct _header extract_header(char * strHeader){
 
 struct _header read_message(char * _message, char * body) {
 
-    struct _header header;
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[1000] = "";
     char strBody[1000] = "";
@@ -95,25 +94,25 @@ again:
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:            
-                cadastrar_musica(new_fd, body);
+                cadastrar_musica(body);
                 break;
             case REMOVER_UMA_MUSICA:
-                remover_musica(new_fd, body);
+                remover_musica(body);
                 break;
             case LISTAR_MUSICAS_POR_ANO:
-                listar_musicas_por_ano(new_fd, body);
+                listar_musicas_por_ano(body);
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-                listar_musicas_por_idioma_e_ano(new_fd, body);
+                listar_musicas_por_idioma_e_ano(body);
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
-                listar_musicas_por_tipo(new_fd, body);
+                listar_musicas_por_tipo(body);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
-                listar_info_musica_por_id(new_fd, body);
+                listar_info_musica_por_id(body);
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(new_fd, body);
+                listar_todas_infos_musicas(body);
                 break;
             default:
                 return;

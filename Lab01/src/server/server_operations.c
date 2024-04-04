@@ -7,7 +7,7 @@
 #define MAXLINE 3000
 
 // Função para cadastrar uma nova música
-void cadastrar_musica(int sock_fd, char * body) {
+void cadastrar_musica(char * body) {
     struct music my_music;
     char *token = strtok(body, "=");
     // Gets identifier
@@ -41,7 +41,7 @@ void cadastrar_musica(int sock_fd, char * body) {
 }
 
 // Função para remover uma música a partir de seu identificador
-void remover_musica(int sock_fd, char * body) {
+void remover_musica(char * body) {
     char *token = strtok(body, "=");
     int identifier;
 
@@ -51,7 +51,7 @@ void remover_musica(int sock_fd, char * body) {
 }
 
 // Função para listar todas as músicas lançadas em um determinado ano
-void listar_musicas_por_ano(int sock_fd, char * body) {
+void listar_musicas_por_ano(char * body) {
     char *token = strtok(body, "=");
     int year;
 
@@ -61,7 +61,7 @@ void listar_musicas_por_ano(int sock_fd, char * body) {
 }
 
 // Função para listar todas as músicas em um dado idioma lançadas em um certo ano
-void listar_musicas_por_idioma_e_ano(int sock_fd, char * body) {
+void listar_musicas_por_idioma_e_ano(char * body) {
     char *token = strtok(body, "=");
     char language[LANGUAGE_LENGTH];
     int year;
@@ -76,7 +76,7 @@ void listar_musicas_por_idioma_e_ano(int sock_fd, char * body) {
 }
 
 // Função para listar todas as músicas de um certo tipo
-void listar_musicas_por_tipo(int sock_fd, char * body) {
+void listar_musicas_por_tipo(char * body) {
     char *token = strtok(body, "=");
     char type[MUSIC_TYPE_LENGTH];
 
@@ -86,7 +86,7 @@ void listar_musicas_por_tipo(int sock_fd, char * body) {
 }
 
 // Função para listar todas as informações de uma música dado o seu identificador
-void listar_info_musica_por_id(int sock_fd, char * body) {
+void listar_info_musica_por_id(char * body) {
     char *token = strtok(body, "=");
     int identifier;
 
@@ -96,5 +96,5 @@ void listar_info_musica_por_id(int sock_fd, char * body) {
 }
 
 // Função para listar todas as informações de todas as músicas
-void listar_todas_infos_musicas(int sock_fd, char * body) {
+void listar_todas_infos_musicas(char * body) {
 }
