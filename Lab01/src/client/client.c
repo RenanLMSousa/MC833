@@ -85,7 +85,7 @@ int read_int(int isId) {
     return integer;
 }
 
-// 
+// Verifica se o header representa o servidor, se não, retorna 1
 int verificar_header(char * header) {
     int size, role, operation;
 
@@ -106,7 +106,7 @@ int verificar_header(char * header) {
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
     operation = atoi(token);
-    if (operation != 1) {
+    if (operation != -1) {
         return 1;
     }
 
@@ -131,6 +131,10 @@ int remove_cabecalho_servidor(char * message, char * body) {
             readingBody = 0;
         } else {
             if (readingBody) {
+                char strId[] = "Identifier=";
+                if (strncmp(token, strId, strlen(strId)) == 0) {
+                    strcat(strBody, "\n");
+                }
                 strcat(strBody, token);
                 strcat(strBody, "\n");
             } else {
@@ -143,7 +147,6 @@ int remove_cabecalho_servidor(char * message, char * body) {
 
     // Exibindo o conteúdo separado
     strcpy(body, strBody);
-
     return verificar_header(strHeader);
 }
 
@@ -250,7 +253,10 @@ void do_client_stuff(int sock_fd) {
         }
         else {
             char body[MAX_BODY_SIZE];
-            remove_cabecalho_servidor(sendline, body);
+            int error = remove_cabecalho_servidor(sendline, body);
+            if (error == 1) {
+                printf("Mensagem recebida não é do servidor, segue o corpo:\n");
+            }
             printf("\n%s\n", body);
         }
     }
@@ -285,7 +291,10 @@ int main() {
         exit(EXIT_FAILURE);
     }
     char body[MAX_BODY_SIZE];
-    remove_cabecalho_servidor(buf, body);
+    int error = remove_cabecalho_servidor(buf, body);
+    if (error == 1) {
+        printf("Mensagem recebida não é do servidor, segue o corpo:\n");
+    }
     printf("%s\n", body);
 
     // Executa lógica do cliente
