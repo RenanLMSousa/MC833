@@ -19,7 +19,7 @@ void send_all(int __fd, const void *__buf, int __flags){
 }
 
 // Anexa cabeçalho da operação ao corpo da mensagem
-void anexar_header_operacao(char * message , int operacao, int admin){
+void anexar_header_operacao(char * message , int operacao, int role){
     // char strOp[3000] = "", strAd[3000] = "", strMessage[3000] = "", strOut[3000] = "";
     char strOut[3000] = "", strMessage[3000] = "";
 
@@ -29,7 +29,7 @@ void anexar_header_operacao(char * message , int operacao, int admin){
     int msg_size = strlen(strMessage);
 
     // Cria o cabeçalho
-    sprintf(strOut, "#HEADER\nSize=%d\nAdmin=%d\nOperation=%d\n#BODY\n", msg_size, admin, operacao);
+    sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
     strcat(strOut, strMessage);
 
     // Coloca a mensagem com o cabeçalho na variável original
@@ -37,36 +37,36 @@ void anexar_header_operacao(char * message , int operacao, int admin){
 }
 
 // Cadastra uma nova música
-void cadastrar_musica(int sock_fd, struct music nova_musica, int admin) {
+void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
     char strMusic[2000];
     music_to_string(nova_musica, strMusic);
 
-    anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA, admin);
+    anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA, role);
     send_all(sock_fd,strMusic,0);
 }
 
 // Remove uma música a partir de seu identificador
-void remover_musica(int sock_fd, int identifier, int admin) {
+void remover_musica(int sock_fd, int identifier, int role) {
     char strId[3000], message[3000] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
-    anexar_header_operacao(message, REMOVER_UMA_MUSICA, admin);
+    anexar_header_operacao(message, REMOVER_UMA_MUSICA, role);
     send_all(sock_fd, message, 0);
 }
 
 // Lista todas as músicas lançadas em um determinado ano
-void listar_musicas_por_ano(int sock_fd, int year, int admin) {
+void listar_musicas_por_ano(int sock_fd, int year, int role) {
     char strYear[3000], message[3000] = "ReleaseYear=";
     sprintf(strYear, "%d\n", year);
     strcat(message, strYear);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_ANO, admin);
+    anexar_header_operacao(message, LISTAR_MUSICAS_POR_ANO, role);
     send_all(sock_fd, message, 0);
 }
 
 // Lista todas as músicas em um dado idioma lançadas em um certo ano
-void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int admin) {
+void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int role) {
     char strYear[3000], message[3000] = "Language=";
     strcat(message, idioma);
     strcat(message, "ReleaseYear=");
@@ -74,32 +74,32 @@ void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int a
     strcat(message, strYear);
 
     anexar_header_operacao(message, LISTAR_MUSICAS_POR_IDIOMA_E_ANO, 0);
-    send_all(sock_fd, message, admin);
+    send_all(sock_fd, message, role);
 }
 
 // Lista todas as músicas de um certo tipo
-void listar_musicas_por_tipo(int sock_fd,  char *tipo, int admin) {
+void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
     char message[3000] = "MusicType=";
     strcat(message, tipo);
 
     anexar_header_operacao(message, LISTAR_MUSICAS_POR_TIPO, 0);
-    send_all(sock_fd, message, admin);
+    send_all(sock_fd, message, role);
 }
 
 // Lista todas as informações de uma música dado o seu identificador
-void listar_info_musica_por_id(int sock_fd, int identifier, int admin) {
+void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
     char strId[3000], message[3000] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
     anexar_header_operacao(message, LISTAR_INFO_MUSICA_POR_ID, 0);
-    send_all(sock_fd, message, admin);
+    send_all(sock_fd, message, role);
 }
 
 // Lista todas as informações de todas as músicas
-void listar_todas_infos_musicas(int sock_fd, int admin) {
+void listar_todas_infos_musicas(int sock_fd, int role) {
     char message[3000] = "";
     
     anexar_header_operacao(message, LISTAR_TODAS_INFOS_MUSICAS, 0);
-    send_all(sock_fd, message, admin);
+    send_all(sock_fd, message, role);
 }

@@ -89,12 +89,12 @@ int read_int(int isId) {
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
     struct music my_music;
-    int admin = -1, operation, identifier, year;
+    int role = -1, operation, identifier, year;
     char language[LANGUAGE_LENGTH], music_type[MUSIC_TYPE_LENGTH], sendline[MAXLINE], buffer[3000];
     
     // Garante que o usuário escolha entre ser ou não admin
-    while (admin == -1) {
-        admin = run_admin();
+    while (role == -1) {
+        role = run_admin();
     }
     
     while(true) {
@@ -130,17 +130,17 @@ void do_client_stuff(int sock_fd) {
 
                 my_music.release_year = read_int(0);
 
-                cadastrar_musica(sock_fd, my_music, admin);
+                cadastrar_musica(sock_fd, my_music, role);
                 break;
             case REMOVER_UMA_MUSICA:
                 identifier = read_int(1);
-                remover_musica(sock_fd, identifier, admin);
+                remover_musica(sock_fd, identifier, role);
                 break;
             case LISTAR_MUSICAS_POR_ANO:
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_ano(sock_fd, year, admin);
+                listar_musicas_por_ano(sock_fd, year, role);
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
                 printf("Enter language: ");
@@ -148,19 +148,19 @@ void do_client_stuff(int sock_fd) {
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_idioma_e_ano(sock_fd, language, year, admin);
+                listar_musicas_por_idioma_e_ano(sock_fd, language, year, role);
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
                 printf("Enter music type: ");
                 fgets(music_type, sizeof(music_type), stdin);
-                listar_musicas_por_tipo(sock_fd, music_type, admin);
+                listar_musicas_por_tipo(sock_fd, music_type, role);
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
                 identifier = read_int(1);
-                listar_info_musica_por_id(sock_fd, identifier, admin);
+                listar_info_musica_por_id(sock_fd, identifier, role);
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(sock_fd, admin);
+                listar_todas_infos_musicas(sock_fd, role);
                 break;
             default:
                 return;
@@ -180,7 +180,7 @@ void do_client_stuff(int sock_fd) {
 int main() {
     int sock_fd;
     struct sockaddr_in servaddr;
-    Configuracao serverConfig;
+    configuracao serverConfig;
 
     printf("Reading configs\n");
     serverConfig =  ler_configuracao("../../server.config");

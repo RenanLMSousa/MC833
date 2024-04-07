@@ -18,7 +18,7 @@
 struct _header {
     int operation;
     int size;
-    int admin;
+    int role;
 };
 
 struct _header extract_header(char * strHeader){
@@ -29,10 +29,10 @@ struct _header extract_header(char * strHeader){
     token = strtok(NULL, "\n");
     header.size = atoi(token);
 
-    // Admin
+    // Role
     token = strtok(NULL, "=");
     token = strtok(NULL, "\n");
-    header.admin = atoi(token);
+    header.role = atoi(token);
 
     // Operação
     token = strtok(NULL, "=");
@@ -85,14 +85,14 @@ again:
         char body[3000];
         char strMusic[10000];
         struct _header header = read_message(buf,body);
-        int operation = header.operation, admin = header.admin, counter;
+        int operation = header.operation, role = header.role, counter;
         // Garantir que o buffer está limpo
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
             case CADASTRAR_UMA_MUSICA:       
                 // Verifica se o usuário é admin     
-                if (admin == 1) {
+                if (role == 1) {
                     error = cadastrar_musica(body);
                     if (error == 1) {
                         if (write(new_fd, "This id is already in use.\n", n) < 0) {
@@ -122,7 +122,7 @@ again:
                 break;
             case REMOVER_UMA_MUSICA:
                 // Verifica se o usuário é admin  
-                if (admin == 1) {
+                if (role == 1) {
                     error = remover_musica(body);
                     if (error == 1) {
                         if (write(new_fd, "Song not found.\n", n) < 0) {
@@ -218,7 +218,7 @@ again:
 
 
 int main() {
-    Configuracao serverConfig;
+    configuracao serverConfig;
 
     printf("Reading configs\n");
     serverConfig =  ler_configuracao("../../server.config");
