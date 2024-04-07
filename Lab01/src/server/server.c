@@ -12,7 +12,7 @@
 #define MAXLINE 1000
 #define SA struct sockaddr
 #define LISTENQ 20
-#define MAX_HEADER_SIZE 100
+#define MAX_HEADER_SIZE 1000
 #define MAX_BODY_SIZE 3000
 
 // Estrutura privada para guardar informações do cabeçalho

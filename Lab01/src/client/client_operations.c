@@ -26,7 +26,7 @@ void anexar_header_operacao(char * message , int operacao, int role){
     // Copia a mensagem para um buffer temporário
     strcat(strMessage, message);
     strcat(strMessage,"\n");
-    int msg_size = strlen(strMessage);
+    int msg_size = sizeof(strMessage);
 
     // Cria o cabeçalho
     sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
