@@ -25,7 +25,7 @@
 #define MAX_BODY_SIZE 3000
 
 // Envia todos os bytes do buffer
-void send_all(int __fd, const void *__buf, int __flags);
+int send_all(int s, char * buf, int len);
 
 // Cadastra uma nova música
 void cadastrar_musica(int sock_fd, struct music nova_musica, int role);

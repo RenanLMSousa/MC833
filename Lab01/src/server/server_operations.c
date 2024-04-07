@@ -7,20 +7,10 @@
 #define MAXLINE 3000
 
 // Envia todos os bytes do buffer
-// void send_all(int __fd, const void *__buf, int __flags){
-//     int bytes_sent;
-//     char cur_buf[MAXLINE];
-//     strcpy(cur_buf, __buf);
-//     while(strlen(cur_buf) > 0){
-//         bytes_sent = send(__fd, cur_buf, strlen(cur_buf), __flags);
-//         memmove(cur_buf, cur_buf + bytes_sent, strlen(cur_buf) - bytes_sent + 1);
-//     }
-// }
-
 int send_all(int s, char *buf, int len)
 {
-    int total = 0; // how many bytes we've sent
-    int bytesleft = len; // how many we have left to send
+    int total = 0;
+    int bytesleft = len;
     int n;
     while(total < len) {
         n = send(s, buf+total, bytesleft, 0);

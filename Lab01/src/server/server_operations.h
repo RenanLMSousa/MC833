@@ -23,7 +23,6 @@
 
 // Envia todos os bytes do buffer
 int send_all(int s, char * buf, int len);
-// void send_all(int __fd, const void *__buf, int __flags);
 
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
 int cadastrar_musica(char * body);
