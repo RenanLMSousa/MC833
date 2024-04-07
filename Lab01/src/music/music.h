@@ -20,4 +20,5 @@ struct music {
 void print_music_details(struct music my_music);
 void music_to_string_reduced(struct music my_music, char * buffer);
 void music_to_string(struct music my_music, char *buffer);
+struct music string_to_music(char * str);
 #endif /* MUSIC_H */

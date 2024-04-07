@@ -19,35 +19,7 @@ void send_all(int __fd, const void *__buf, int __flags){
 
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
 int cadastrar_musica(char * body) {
-    struct music my_music, music_list[MAX_SONGS];
-    char *token = strtok(body, "=");
-    // Obtém identificador
-    token = strtok(NULL, "\n");
-    my_music.identifier = atoi(token);
-    // Obtém título
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    strcpy(my_music.title, token);
-    // Obtém intérprete
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    strcpy(my_music.performer, token);
-    // Obtém linguagem
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    strcpy(my_music.language, token);
-    // Obtém tipo de música
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    strcpy(my_music.music_type, token);
-    // Obtém refrão
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    strcpy(my_music.chorus, token);
-    // Obtém ano de lançamento de lançamento
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    my_music.release_year = atoi(token);
+    struct music my_music = string_to_music(body), music_list[MAX_SONGS];
     
     int n = read_music_list(music_list, FILEPATH);
     // Verifica se o identificador já está em uso

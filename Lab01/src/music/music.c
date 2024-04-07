@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "music.h"
 
@@ -41,4 +42,39 @@ void music_to_string(struct music my_music, char *buffer) {
     append_string(buffer, "MusicType=", my_music.music_type);
     append_string(buffer, "Chorus=", my_music.chorus);
     append_int(buffer, "ReleaseYear=", my_music.release_year);
+}
+
+struct music string_to_music(char * str) {
+    struct music my_music;
+    char *token = strtok(str, "=");
+
+    // Obtém identificador
+    token = strtok(NULL, "\n");
+    my_music.identifier = atoi(token);
+    // Obtém título
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    strcpy(my_music.title, token);
+    // Obtém intérprete
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    strcpy(my_music.performer, token);
+    // Obtém linguagem
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    strcpy(my_music.language, token);
+    // Obtém tipo de música
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    strcpy(my_music.music_type, token);
+    // Obtém refrão
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    strcpy(my_music.chorus, token);
+    // Obtém ano de lançamento
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    my_music.release_year = atoi(token);
+
+    return my_music;
 }
