@@ -18,8 +18,8 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     // Lê cada linha do arquivo
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
-        // Quebra a linha em campos separados por ponto e vírgula
-        char *token = strtok(line, ";");
+        // Quebra a linha em campos separados por |
+        char *token = strtok(line, "|");
         int i = 0;
         while (token != NULL) {
             switch (i) {
@@ -47,7 +47,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
                 default:
                     break;
             }
-            token = strtok(NULL, ";");
+            token = strtok(NULL, "|");
             i++;
         }
         num_songs++;
@@ -68,7 +68,7 @@ void write_music_list(struct music music_list[MAX_SONGS], int n, const char *fil
 
     // Escreve cada música na lista no arquivo CSV
     for (int i = 0; i < n; i++) {
-        fprintf(file, "%d;%s;%s;%s;%s;%s;%d\n",
+        fprintf(file, "%d|%s|%s|%s|%s|%s|%d\n",
                 music_list[i].identifier,
                 music_list[i].title,
                 music_list[i].performer,
