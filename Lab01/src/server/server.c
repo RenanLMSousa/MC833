@@ -9,10 +9,11 @@
 #include "../external_files/config_handler.h"
 #include "server_operations.h"
 
-#define MAX_SONGS 100
 #define MAXLINE 1000
-#define SA  struct sockaddr
+#define SA struct sockaddr
 #define LISTENQ 20
+#define MAX_HEADER_SIZE 100
+#define MAX_BODY_SIZE 3000
 
 // Estrutura privada para guardar informações do cabeçalho
 struct _header {
@@ -44,8 +45,8 @@ struct _header extract_header(char * strHeader){
 
 struct _header read_message(char * _message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
-    char strHeader[1000] = "";
-    char strBody[1000] = "";
+    char strHeader[MAX_HEADER_SIZE] = "";
+    char strBody[MAX_BODY_SIZE] = "";
 
     // Variável para controlar se estamos lendo o cabeçalho ou o corpo
     int readingBody = 0;
@@ -82,8 +83,8 @@ void do_server_stuff(int new_fd){
 again:
     memset(buf, 0, sizeof(buf));
     while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
-        char body[3000];
-        char strMusic[10000];
+        char body[MAX_BODY_SIZE];
+        char strMusic[MAX_HEADER_SIZE];
         struct _header header = read_message(buf,body);
         int operation = header.operation, role = header.role, counter;
         // Garantir que o buffer está limpo

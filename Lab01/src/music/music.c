@@ -23,7 +23,7 @@ void append_string(char * buffer, char * key, char * value) {
 
 // Adiciona no fim da string buffer uma chave e um inteiro
 void append_int(char * buffer, char * key, int value) {
-    char temp_buffer[200]; // Buffer temporário para converter int para string
+    char temp_buffer[12]; // Buffer temporário para converter int para string
     sprintf(temp_buffer, "%d", value);
     append_string(buffer, key, temp_buffer);
 }

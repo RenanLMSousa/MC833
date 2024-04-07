@@ -12,8 +12,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define MAX_SONGS 100
-
 // Definições para operações
 #define CADASTRAR_UMA_MUSICA 1
 #define REMOVER_UMA_MUSICA 2
@@ -22,6 +20,9 @@
 #define LISTAR_MUSICAS_POR_TIPO 5
 #define LISTAR_INFO_MUSICA_POR_ID 6
 #define LISTAR_TODAS_INFOS_MUSICAS 7
+
+#define MAX_HEADER_SIZE 100
+#define MAX_BODY_SIZE 3000
 
 // Envia todos os bytes do buffer
 void send_all(int __fd, const void *__buf, int __flags);

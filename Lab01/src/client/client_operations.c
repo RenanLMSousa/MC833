@@ -5,6 +5,7 @@
 #include "../external_files/storage_handler.h"
 
 #define MAXLINE 3000
+#define MAX_INT_STR 12
 
 // Envia todos os bytes do buffer
 void send_all(int __fd, const void *__buf, int __flags){
@@ -20,8 +21,7 @@ void send_all(int __fd, const void *__buf, int __flags){
 
 // Anexa cabeçalho da operação ao corpo da mensagem
 void anexar_header_operacao(char * message , int operacao, int role){
-    // char strOp[3000] = "", strAd[3000] = "", strMessage[3000] = "", strOut[3000] = "";
-    char strOut[3000] = "", strMessage[3000] = "";
+    char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
 
     // Copia a mensagem para um buffer temporário
     strcat(strMessage, message);
@@ -38,7 +38,7 @@ void anexar_header_operacao(char * message , int operacao, int role){
 
 // Cadastra uma nova música
 void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
-    char strMusic[2000];
+    char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
     music_to_string(nova_musica, strMusic);
 
     anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA, role);
@@ -47,7 +47,7 @@ void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
 
 // Remove uma música a partir de seu identificador
 void remover_musica(int sock_fd, int identifier, int role) {
-    char strId[3000], message[3000] = "Identifier=";
+    char strId[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
@@ -57,7 +57,7 @@ void remover_musica(int sock_fd, int identifier, int role) {
 
 // Lista todas as músicas lançadas em um determinado ano
 void listar_musicas_por_ano(int sock_fd, int year, int role) {
-    char strYear[3000], message[3000] = "ReleaseYear=";
+    char strYear[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "ReleaseYear=";
     sprintf(strYear, "%d\n", year);
     strcat(message, strYear);
 
@@ -67,7 +67,7 @@ void listar_musicas_por_ano(int sock_fd, int year, int role) {
 
 // Lista todas as músicas em um dado idioma lançadas em um certo ano
 void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int role) {
-    char strYear[3000], message[3000] = "Language=";
+    char strYear[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Language=";
     strcat(message, idioma);
     strcat(message, "ReleaseYear=");
     sprintf(strYear, "%d\n", year);
@@ -79,7 +79,7 @@ void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int r
 
 // Lista todas as músicas de um certo tipo
 void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
-    char message[3000] = "MusicType=";
+    char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "MusicType=";
     strcat(message, tipo);
 
     anexar_header_operacao(message, LISTAR_MUSICAS_POR_TIPO, 0);
@@ -88,7 +88,7 @@ void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
 
 // Lista todas as informações de uma música dado o seu identificador
 void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
-    char strId[3000], message[3000] = "Identifier=";
+    char strId[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
@@ -98,7 +98,7 @@ void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
 
 // Lista todas as informações de todas as músicas
 void listar_todas_infos_musicas(int sock_fd, int role) {
-    char message[3000] = "";
+    char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "";
     
     anexar_header_operacao(message, LISTAR_TODAS_INFOS_MUSICAS, 0);
     send_all(sock_fd, message, role);

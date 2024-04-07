@@ -12,8 +12,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define MAX_SONGS 100
-
 // Definições para operações
 #define CADASTRAR_UMA_MUSICA 1
 #define REMOVER_UMA_MUSICA 2
