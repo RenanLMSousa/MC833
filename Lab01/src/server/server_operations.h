@@ -23,6 +23,9 @@
 #define LISTAR_INFO_MUSICA_POR_ID 6
 #define LISTAR_TODAS_INFOS_MUSICAS 7
 
+// Envia todos os bytes do buffer
+void send_all(int __fd, const void *__buf, int __flags);
+
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
 int cadastrar_musica(char * body);
 

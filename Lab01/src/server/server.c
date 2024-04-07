@@ -244,15 +244,21 @@ int main() {
 
     for (;;) {
         clilen = sizeof(cliaddr);
+
         // Aceitar conexões entrantes
-        
         new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
-        printf("Connection established\n");
+
+        // Envio de mensagem para confirmar conexão com cliente
+        char conf_message[] = "Connection established.";
+        send_all(new_fd, conf_message, 0);
+        printf("%s\n", conf_message);
+
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
             close(sock_fd); /* fechar o socket de escuta */
             // Processar a solicitação
             do_server_stuff(new_fd);
+
             exit(0);
         }
         // Pai fecha o socket conectado

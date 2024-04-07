@@ -14,6 +14,7 @@
 #define SA struct sockaddr
 #define LISTENQ 20
 #define MAXLINE 1000
+#define MAX_BUF_SIZE 3000
 
 // Pergunta se o usuário quer rodar como administrador e retorna o resultado
 int run_admin() {
@@ -197,8 +198,16 @@ int main() {
 
     // Conectando ao servidor
     connect(sock_fd, (SA *) &servaddr, sizeof(servaddr));
-    printf("Connection established\n");
 
+    // Esperando resposta para verificar conexão
+    char buf[MAX_BUF_SIZE];
+    if (recv(sock_fd, buf, MAX_BUF_SIZE, 0) < 0) {
+        perror("Error receiving confirmation.");
+        exit(EXIT_FAILURE);
+    }
+    printf("%s\n", buf);
+
+    // Executa lógica do cliente
     do_client_stuff(sock_fd);
     
     // Fechando o socket e saindo
