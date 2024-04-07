@@ -94,29 +94,33 @@ again:
             case CADASTRAR_UMA_MUSICA:       
                 // Verifica se o usuário é admin     
                 if (role == 1) {
+                    char err_msg[] = "This id is already in use.\n";
                     error = cadastrar_musica(body);
                     if (error == 1) {
-                        if (write(new_fd, "This id is already in use.\n", n) < 0) {
-                            perror("str_echo: write error");
+                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                            perror("str_echo: send error");
                             return;
                         }
                     }
                     else if (error == 2) {
-                        if (write(new_fd, "You have reached the limit number of songs.\n", n) < 0) {
-                            perror("str_echo: write error");
+                        char err_msg[] = "You have reached the limit number of songs.\n";
+                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                            perror("str_echo: send error");
                             return;
                         }
                     }
                     else {
-                        if (write(new_fd, "Song registered.\n", n) < 0) {
-                            perror("str_echo: write error");
+                        char err_msg[] = "Song registered.\n";
+                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                            perror("str_echo: send error");
                             return;
                         }
                     }
                 }
                 else {
-                    if (write(new_fd, "This operation is not available to regular users.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "This operation is not available to regular users.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
@@ -126,21 +130,24 @@ again:
                 if (role == 1) {
                     error = remover_musica(body);
                     if (error == 1) {
-                        if (write(new_fd, "Song not found.\n", n) < 0) {
-                            perror("str_echo: write error");
+                        char err_msg[] = "Song not found.\n";
+                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                            perror("str_echo: send error");
                             return;
                         }
                     }
                     else {
-                        if (write(new_fd, "Song deleted.\n", n) < 0) {
-                            perror("str_echo: write error");
+                        char err_msg[] = "Song deleted.\n";
+                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                            perror("str_echo: send error");
                             return;
                         }
                     }
                 }
                 else {
-                    if (write(new_fd, "This operation is not available to regular users.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "This operation is not available to regular users.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
@@ -148,61 +155,81 @@ again:
             case LISTAR_MUSICAS_POR_ANO:
                 counter = listar_musicas_por_ano(body, strMusic);
                 if (counter == 0) {
-                    if (write(new_fd, "0 songs found.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "No songs found.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
                 else { 
-                    send_all(new_fd, strMusic, 0);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
                 }
                 break;
             case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
                 counter = listar_musicas_por_idioma_e_ano(body, strMusic);
                 if (counter == 0) {
-                    if (write(new_fd, "0 songs found.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "No songs found.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    send_all(new_fd, strMusic, 0);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
                 }
                 break;
             case LISTAR_MUSICAS_POR_TIPO:
                 counter = listar_musicas_por_tipo(body, strMusic);
                 if (counter == 0) {
-                    if (write(new_fd, "0 songs found.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "No songs found.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    send_all(new_fd, strMusic, 0);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
                 }
                 break;
             case LISTAR_INFO_MUSICA_POR_ID:
                 error = listar_info_musica_por_id(body, strMusic);
                 if (error == 1) {
-                    if (write(new_fd, "Song not found.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "Song not found.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    send_all(new_fd, strMusic, 0);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
                 }
                 break;
             case LISTAR_TODAS_INFOS_MUSICAS:
                 counter = listar_todas_infos_musicas(strMusic);
                 if (counter == 0) {
-                    if (write(new_fd, "No songs to list.\n", n) < 0) {
-                        perror("str_echo: write error");
+                    char err_msg[] = "No songs to list.\n";
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    send_all(new_fd, strMusic, 0);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
                 }
                 break;
             default:
@@ -251,7 +278,10 @@ int main() {
 
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.";
-        send_all(new_fd, conf_message, 0);
+        if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
+            perror("str_echo: send error");
+            exit(0);
+        }
         printf("%s\n", conf_message);
 
         // Criação de um processo filho para tratar a conexão
