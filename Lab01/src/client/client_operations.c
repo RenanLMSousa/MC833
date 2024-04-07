@@ -32,7 +32,7 @@ void anexar_header_operacao(char * message , int operacao, int role){
     // Copia a mensagem para um buffer temporário
     strcat(strMessage, message);
     strcat(strMessage,"\n");
-    int msg_size = sizeof(strMessage);
+    int msg_size = strlen(strMessage) * sizeof(char);
 
     // Cria o cabeçalho
     sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
@@ -88,7 +88,7 @@ void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int r
     sprintf(strYear, "%d\n", year);
     strcat(message, strYear);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_IDIOMA_E_ANO, 0);
+    anexar_header_operacao(message, LISTAR_MUSICAS_POR_IDIOMA_E_ANO, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -100,7 +100,7 @@ void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
     char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "MusicType=";
     strcat(message, tipo);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_TIPO, 0);
+    anexar_header_operacao(message, LISTAR_MUSICAS_POR_TIPO, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -113,7 +113,7 @@ void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
-    anexar_header_operacao(message, LISTAR_INFO_MUSICA_POR_ID, 0);
+    anexar_header_operacao(message, LISTAR_INFO_MUSICA_POR_ID, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -124,7 +124,7 @@ void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
 void listar_todas_infos_musicas(int sock_fd, int role) {
     char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "";
     
-    anexar_header_operacao(message, LISTAR_TODAS_INFOS_MUSICAS, 0);
+    anexar_header_operacao(message, LISTAR_TODAS_INFOS_MUSICAS, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;

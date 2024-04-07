@@ -43,6 +43,25 @@ struct _header extract_header(char * strHeader){
     return header;
 }
 
+// Anexa cabeçalho da operação ao corpo da mensagem
+void anexar_header_operacao(char * message){
+    char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
+    int role = 2; // Role do servidor é 2
+    int operacao = -1; // Operacao das respostas do servidor é -1 
+
+    // Copia a mensagem para um buffer temporário
+    strcat(strMessage, message);
+    strcat(strMessage,"\n");
+    int msg_size = strlen(strMessage) * sizeof(char);
+
+    // Cria o cabeçalho
+    sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
+    strcat(strOut, strMessage);
+
+    // Coloca a mensagem com o cabeçalho na variável original
+    strcpy(message, strOut);
+}
+
 struct _header read_message(char * _message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[MAX_HEADER_SIZE] = "";
@@ -94,9 +113,10 @@ again:
             case CADASTRAR_UMA_MUSICA:       
                 // Verifica se o usuário é admin     
                 if (role == 1) {
-                    char err_msg[] = "This id is already in use.\n";
                     error = cadastrar_musica(body);
                     if (error == 1) {
+                        char err_msg[] = "This id is already in use.\n";
+                        anexar_header_operacao(err_msg);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
@@ -104,14 +124,16 @@ again:
                     }
                     else if (error == 2) {
                         char err_msg[] = "You have reached the limit number of songs.\n";
+                        anexar_header_operacao(err_msg);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
                     }
                     else {
-                        char err_msg[] = "Song registered.\n";
-                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        char msg[] = "Song registered.\n";
+                        anexar_header_operacao(msg);
+                        if (send_all(new_fd, msg, strlen(msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
@@ -119,6 +141,7 @@ again:
                 }
                 else {
                     char err_msg[] = "This operation is not available to regular users.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -131,14 +154,16 @@ again:
                     error = remover_musica(body);
                     if (error == 1) {
                         char err_msg[] = "Song not found.\n";
+                        anexar_header_operacao(err_msg);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
                     }
                     else {
-                        char err_msg[] = "Song deleted.\n";
-                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        char msg[] = "Song deleted.\n";
+                        anexar_header_operacao(msg);
+                        if (send_all(new_fd, msg, strlen(msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
@@ -146,6 +171,7 @@ again:
                 }
                 else {
                     char err_msg[] = "This operation is not available to regular users.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -156,12 +182,14 @@ again:
                 counter = listar_musicas_por_ano(body, strMusic);
                 if (counter == 0) {
                     char err_msg[] = "No songs found.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else { 
+                    anexar_header_operacao(strMusic);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -172,12 +200,14 @@ again:
                 counter = listar_musicas_por_idioma_e_ano(body, strMusic);
                 if (counter == 0) {
                     char err_msg[] = "No songs found.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
+                    anexar_header_operacao(strMusic);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -188,12 +218,14 @@ again:
                 counter = listar_musicas_por_tipo(body, strMusic);
                 if (counter == 0) {
                     char err_msg[] = "No songs found.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
+                    anexar_header_operacao(strMusic);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -204,12 +236,14 @@ again:
                 error = listar_info_musica_por_id(body, strMusic);
                 if (error == 1) {
                     char err_msg[] = "Song not found.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
+                    anexar_header_operacao(strMusic);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -220,12 +254,14 @@ again:
                 counter = listar_todas_infos_musicas(strMusic);
                 if (counter == 0) {
                     char err_msg[] = "No songs to list.\n";
+                    anexar_header_operacao(err_msg);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
+                    anexar_header_operacao(strMusic);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -278,11 +314,12 @@ int main() {
 
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.";
+        anexar_header_operacao(conf_message);
         if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
             perror("str_echo: send error");
             exit(0);
         }
-        printf("%s\n", conf_message);
+        printf("Connection established.\n");
 
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */

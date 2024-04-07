@@ -85,6 +85,68 @@ int read_int(int isId) {
     return integer;
 }
 
+// 
+int verificar_header(char * header) {
+    int size, role, operation;
+
+    // Tamanho
+    char *token = strtok(header, "=");
+    token = strtok(NULL, "\n");
+    size = atoi(token);
+
+    // Role
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    role = atoi(token);
+    if (role != 2) {
+        return 1;
+    }
+
+    // Operação
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    operation = atoi(token);
+    if (operation != 1) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna 1 se houver erro
+int remove_cabecalho_servidor(char * message, char * body) {
+    // Variáveis para armazenar o conteúdo do #HEADER e #BODY
+    char strHeader[MAX_HEADER_SIZE] = "";
+    char strBody[MAX_BODY_SIZE] = "";
+
+    // Variável para controlar se estamos lendo o cabeçalho ou o corpo
+    int readingBody = 0;
+
+    // Separando o conteúdo
+    char *token = strtok(message, "\n");
+    while (token != NULL) {
+        if (strcmp(token, "#BODY") == 0) {
+            readingBody = 1;
+        } else if (strcmp(token, "#HEADER") == 0) {
+            readingBody = 0;
+        } else {
+            if (readingBody) {
+                strcat(strBody, token);
+                strcat(strBody, "\n");
+            } else {
+                strcat(strHeader, token);
+                strcat(strHeader, "\n");
+            }
+        }
+        token = strtok(NULL, "\n");
+    }
+
+    // Exibindo o conteúdo separado
+    strcpy(body, strBody);
+
+    return verificar_header(strHeader);
+}
+
 // Faz a lógica da interação entre cliente e servidor
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
@@ -187,7 +249,9 @@ void do_client_stuff(int sock_fd) {
             printf("str_cli: server terminated prematurely");
         }
         else {
-            printf("\n%s\n",sendline);
+            char body[MAX_BODY_SIZE];
+            remove_cabecalho_servidor(sendline, body);
+            printf("\n%s\n", body);
         }
     }
 }
@@ -220,7 +284,9 @@ int main() {
         perror("Error receiving confirmation.");
         exit(EXIT_FAILURE);
     }
-    printf("%s\n", buf);
+    char body[MAX_BODY_SIZE];
+    remove_cabecalho_servidor(buf, body);
+    printf("%s\n", body);
 
     // Executa lógica do cliente
     do_client_stuff(sock_fd);
