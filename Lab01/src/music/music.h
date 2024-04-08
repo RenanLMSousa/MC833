@@ -5,7 +5,7 @@
 #define PERFORMER_LENGTH 100
 #define LANGUAGE_LENGTH 100
 #define MUSIC_TYPE_LENGTH 100
-#define CHORUS_LENGTH 1000
+#define CHORUS_LENGTH 3000
 
 struct music {
     int identifier;

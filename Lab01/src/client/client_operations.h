@@ -22,10 +22,13 @@
 #define LISTAR_TODAS_INFOS_MUSICAS 7
 
 #define MAX_HEADER_SIZE 1000
-#define MAX_BODY_SIZE 3000
+#define MAX_BODY_SIZE 30000
 
 // Envia todos os bytes do buffer
 int send_all(int s, char * buf, int len);
+
+// Recebe todos os bytes enviados por send_all
+int recv_all(int sock_fd, char * buf);
 
 // Cadastra uma nova música
 void cadastrar_musica(int sock_fd, struct music nova_musica, int role);

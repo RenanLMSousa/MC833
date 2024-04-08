@@ -5,6 +5,7 @@
 #include "../external_files/storage_handler.h"
 
 #define MAXLINE 3000
+#define true 1
 
 // Envia todos os bytes do buffer
 int send_all(int s, char *buf, int len)
@@ -22,6 +23,31 @@ int send_all(int s, char *buf, int len)
         }
     
     return total;
+}
+
+// Recebe todos os bytes enviados por send_all
+int recv_all(int sock_fd, char * buf) {
+    char temp_buffer[MAXLINE];
+
+    while (true) {
+        int n = recv(sock_fd, temp_buffer, sizeof(temp_buffer), 0);
+        if (n < 0) {
+            perror("recv");
+            return n;
+        } else if (n == 0) {
+            return n;
+        } else {
+            int str_size = strlen(temp_buffer);
+            char last_char = temp_buffer[str_size - 1];
+            if (last_char == '#') {
+                temp_buffer[str_size - 1] = '\0';
+                strcat(buf, temp_buffer);
+                return n;
+            }
+            strcat(buf, temp_buffer);
+        }
+        memset(temp_buffer, 0, sizeof(temp_buffer));
+    }
 }
 
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar

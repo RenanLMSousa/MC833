@@ -24,6 +24,9 @@
 // Envia todos os bytes do buffer
 int send_all(int s, char * buf, int len);
 
+// Recebe todos os bytes enviados por send_all
+int recv_all(int sock_fd, char * buf);
+
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
 int cadastrar_musica(char * body);
 

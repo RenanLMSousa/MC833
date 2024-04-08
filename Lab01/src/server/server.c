@@ -9,11 +9,11 @@
 #include "../external_files/config_handler.h"
 #include "server_operations.h"
 
-#define MAXLINE 1000
+#define MAXLINE 3000
 #define SA struct sockaddr
 #define LISTENQ 20
 #define MAX_HEADER_SIZE 1000
-#define MAX_BODY_SIZE 3000
+#define MAX_BODY_SIZE 10000
 
 // Estrutura privada para guardar informações do cabeçalho
 struct _header {
@@ -57,6 +57,7 @@ void anexar_header_operacao(char * message){
     // Cria o cabeçalho
     sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
     strcat(strOut, strMessage);
+    strcat(strOut, "#");
 
     // Coloca a mensagem com o cabeçalho na variável original
     strcpy(message, strOut);
@@ -101,9 +102,9 @@ void do_server_stuff(int new_fd){
 
 again:
     memset(buf, 0, sizeof(buf));
-    while ((n = recv(new_fd, buf, MAXLINE,0)) > 0) {
+    while ((n = recv_all(new_fd, buf)) > 0) {
         char body[MAX_BODY_SIZE];
-        char strMusic[MAX_HEADER_SIZE];
+        char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
         struct _header header = read_message(buf,body);
         int operation = header.operation, role = header.role, counter;
         // Garantir que o buffer está limpo
@@ -313,7 +314,7 @@ int main() {
         new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
 
         // Envio de mensagem para confirmar conexão com cliente
-        char conf_message[] = "Connection established.";
+        char conf_message[] = "Connection established.\n";
         anexar_header_operacao(conf_message);
         if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
             perror("str_echo: send error");

@@ -6,10 +6,10 @@
 
 #define MAXLINE 3000
 #define MAX_INT_STR 12
+#define true 1
 
 // Envia todos os bytes do buffer
-int send_all(int s, char *buf, int len)
-{
+int send_all(int s, char *buf, int len) {
     int total = 0;
     int bytesleft = len;
     int n;
@@ -25,6 +25,32 @@ int send_all(int s, char *buf, int len)
     return total;
 }
 
+// Recebe todos os bytes enviados por send_all
+int recv_all(int sock_fd, char * buf) {
+    char temp_buffer[MAXLINE];
+
+    while (true) {
+        int n = recv(sock_fd, temp_buffer, sizeof(temp_buffer), 0);
+        if (n < 0) {
+            perror("recv");
+            return n;
+        } else if (n == 0) {
+            printf("str_cli: server terminated prematurely\n");
+            return n;
+        } else {
+            int str_size = strlen(temp_buffer);
+            char last_char = temp_buffer[str_size - 1];
+            if (last_char == '#') {
+                temp_buffer[str_size - 1] = '\0';
+                strcat(buf, temp_buffer);
+                return n;
+            }
+            strcat(buf, temp_buffer);
+        }
+        memset(temp_buffer, 0, sizeof(temp_buffer));
+    }
+}
+
 // Anexa cabeçalho da operação ao corpo da mensagem
 void anexar_header_operacao(char * message , int operacao, int role){
     char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
@@ -37,6 +63,7 @@ void anexar_header_operacao(char * message , int operacao, int role){
     // Cria o cabeçalho
     sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
     strcat(strOut, strMessage);
+    strcat(strOut, "#");
 
     // Coloca a mensagem com o cabeçalho na variável original
     strcpy(message, strOut);
@@ -44,7 +71,7 @@ void anexar_header_operacao(char * message , int operacao, int role){
 
 // Cadastra uma nova música
 void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
-    char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
+    char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "";
     music_to_string(nova_musica, strMusic);
 
     anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA, role);

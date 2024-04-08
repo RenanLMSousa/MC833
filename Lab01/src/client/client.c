@@ -13,7 +13,7 @@
 #define true 1
 #define SA struct sockaddr
 #define LISTENQ 20
-#define MAXLINE 1000
+#define MAXLINE 10000
 #define MAX_BUF_SIZE 3000
 
 // Pergunta se o usuário quer rodar como administrador e retorna o resultado
@@ -85,7 +85,7 @@ int read_int(int isId) {
     return integer;
 }
 
-// Verifica se o header representa o servidor, se não, retorna 1
+// Verifica se o header representa o servidor, se sim retorna o tamanho, se não retorna -1
 int verificar_header(char * header) {
     int size, role, operation;
 
@@ -99,7 +99,7 @@ int verificar_header(char * header) {
     token = strtok(NULL, "\n");
     role = atoi(token);
     if (role != 2) {
-        return 1;
+        return -1;
     }
 
     // Operação
@@ -107,14 +107,14 @@ int verificar_header(char * header) {
     token = strtok(NULL, "\n");
     operation = atoi(token);
     if (operation != -1) {
-        return 1;
+        return -1;
     }
 
-    return 0;
+    return size;
 }
 
-// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna 1 se houver erro
-int remove_cabecalho_servidor(char * message, char * body) {
+// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna -1 se houver erro
+int remove_cabecalho(char * message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[MAX_HEADER_SIZE] = "";
     char strBody[MAX_BODY_SIZE] = "";
@@ -145,9 +145,24 @@ int remove_cabecalho_servidor(char * message, char * body) {
         token = strtok(NULL, "\n");
     }
 
+    // Token removeu o \n final do corpo, adicionamos de volta
+    strcat(strBody, "\n");
+
     // Exibindo o conteúdo separado
+    int declared_size = verificar_header(strHeader);
+    int size = strlen(strBody) * sizeof(char);
+    if (declared_size == -1) {
+        return declared_size;
+    }
+
+    if (size != declared_size) {
+        printf("Body size different from declared size.\n");
+        return -1;
+    }
+
     strcpy(body, strBody);
-    return verificar_header(strHeader);
+
+    return 0;
 }
 
 // Faz a lógica da interação entre cliente e servidor
@@ -248,14 +263,14 @@ void do_client_stuff(int sock_fd) {
 
         // Recebe a resposta do servidor após a operação
         int n;
-        if ((n = recv(sock_fd, sendline, MAXLINE,0)) == 0){
-            printf("str_cli: server terminated prematurely");
+        if ((n = recv_all(sock_fd, sendline)) == 0) {
+            printf("str_cli: server terminated prematurely\n");
         }
         else {
-            char body[MAX_BODY_SIZE];
-            int error = remove_cabecalho_servidor(sendline, body);
-            if (error == 1) {
-                printf("Mensagem recebida não é do servidor, segue o corpo:\n");
+            char body[MAX_BODY_SIZE] = "";
+            int error = remove_cabecalho(sendline, body);
+            if (error == -1) {
+                printf("Broken message.\n");
             }
             printf("\n%s\n", body);
         }
@@ -286,15 +301,19 @@ int main() {
 
     // Esperando resposta para verificar conexão
     char buf[MAX_BUF_SIZE];
-    if (recv(sock_fd, buf, MAX_BUF_SIZE, 0) < 0) {
+    int n;
+    if ((n = recv_all(sock_fd, buf)) < 0) {
         perror("Error receiving confirmation.");
         exit(EXIT_FAILURE);
     }
+
     char body[MAX_BODY_SIZE];
-    int error = remove_cabecalho_servidor(buf, body);
-    if (error == 1) {
-        printf("Mensagem recebida não é do servidor, segue o corpo:\n");
+    int error = remove_cabecalho(buf, body);
+    if (error == -1) {
+        printf("Broken confirmation message.\n");
+        exit(EXIT_FAILURE);
     }
+
     printf("%s\n", body);
 
     // Executa lógica do cliente
