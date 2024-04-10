@@ -21,6 +21,9 @@
 #define LISTAR_INFO_MUSICA_POR_ID 6
 #define LISTAR_TODAS_INFOS_MUSICAS 7
 
+#define MAX_HEADER_SIZE 1000
+#define MAX_BODY_SIZE 30000
+
 // Envia todos os bytes do buffer
 int send_all(int s, char * buf, int len);
 

@@ -7,13 +7,11 @@
 #include "../music/music.h"
 #include "../external_files/storage_handler.h"
 #include "../external_files/config_handler.h"
+#include "../utils/utils.h"
 #include "server_operations.h"
 
-#define MAXLINE 3000
 #define SA struct sockaddr
 #define LISTENQ 20
-#define MAX_HEADER_SIZE 1000
-#define MAX_BODY_SIZE 10000
 
 // Estrutura privada para guardar informações do cabeçalho
 struct _header {
@@ -41,26 +39,6 @@ struct _header extract_header(char * strHeader){
     header.operation = atoi(token);
 
     return header;
-}
-
-// Anexa cabeçalho da operação ao corpo da mensagem
-void anexar_header_operacao(char * message){
-    char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
-    int role = 2; // Role do servidor é 2
-    int operacao = -1; // Operacao das respostas do servidor é -1 
-
-    // Copia a mensagem para um buffer temporário
-    strcat(strMessage, message);
-    strcat(strMessage,"\n");
-    int msg_size = strlen(strMessage) * sizeof(char);
-
-    // Cria o cabeçalho
-    sprintf(strOut, "#HEADER\nSize=%d\nRole=%d\nOperation=%d\n#BODY\n", msg_size, role, operacao);
-    strcat(strOut, strMessage);
-    strcat(strOut, "#");
-
-    // Coloca a mensagem com o cabeçalho na variável original
-    strcpy(message, strOut);
 }
 
 struct _header read_message(char * _message, char * body) {
@@ -107,6 +85,7 @@ again:
         char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
         struct _header header = read_message(buf,body);
         int operation = header.operation, role = header.role, counter;
+        printf("%s\n", buf);
         // Garantir que o buffer está limpo
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)

@@ -8,12 +8,12 @@
 #include <ctype.h>
 
 #include "client_operations.h"
+#include "../utils/utils.h"
 #include "../external_files/config_handler.h"
 
 #define true 1
 #define SA struct sockaddr
 #define LISTENQ 20
-#define MAXLINE 10000
 #define MAX_BUF_SIZE 3000
 
 // Pergunta se o usuário quer rodar como administrador e retorna o resultado
@@ -83,86 +83,6 @@ int read_int(int isId) {
         }
     }
     return integer;
-}
-
-// Verifica se o header representa o servidor, se sim retorna o tamanho, se não retorna -1
-int verificar_header(char * header) {
-    int size, role, operation;
-
-    // Tamanho
-    char *token = strtok(header, "=");
-    token = strtok(NULL, "\n");
-    size = atoi(token);
-
-    // Role
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    role = atoi(token);
-    if (role != 2) {
-        return -1;
-    }
-
-    // Operação
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    operation = atoi(token);
-    if (operation != -1) {
-        return -1;
-    }
-
-    return size;
-}
-
-// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna -1 se houver erro
-int remove_cabecalho(char * message, char * body) {
-    // Variáveis para armazenar o conteúdo do #HEADER e #BODY
-    char strHeader[MAX_HEADER_SIZE] = "";
-    char strBody[MAX_BODY_SIZE] = "";
-
-    // Variável para controlar se estamos lendo o cabeçalho ou o corpo
-    int readingBody = 0;
-
-    // Separando o conteúdo
-    char *token = strtok(message, "\n");
-    while (token != NULL) {
-        if (strcmp(token, "#BODY") == 0) {
-            readingBody = 1;
-        } else if (strcmp(token, "#HEADER") == 0) {
-            readingBody = 0;
-        } else {
-            if (readingBody) {
-                char strId[] = "Identifier=";
-                if (strncmp(token, strId, strlen(strId)) == 0) {
-                    strcat(strBody, "\n");
-                }
-                strcat(strBody, token);
-                strcat(strBody, "\n");
-            } else {
-                strcat(strHeader, token);
-                strcat(strHeader, "\n");
-            }
-        }
-        token = strtok(NULL, "\n");
-    }
-
-    // Token removeu o \n final do corpo, adicionamos de volta
-    strcat(strBody, "\n");
-
-    // Exibindo o conteúdo separado
-    int declared_size = verificar_header(strHeader);
-    int size = strlen(strBody) * sizeof(char);
-    if (declared_size == -1) {
-        return declared_size;
-    }
-
-    if (size != declared_size) {
-        printf("Body size different from declared size.\n");
-        return -1;
-    }
-
-    strcpy(body, strBody);
-
-    return 0;
 }
 
 // Faz a lógica da interação entre cliente e servidor
