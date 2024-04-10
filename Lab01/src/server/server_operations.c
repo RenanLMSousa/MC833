@@ -5,7 +5,6 @@
 #include "../external_files/storage_handler.h"
 #include "../utils/utils.h"
 
-#define MAXLINE 3000
 #define true 1
 
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar

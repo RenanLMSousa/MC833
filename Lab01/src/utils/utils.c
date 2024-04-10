@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <unistd.h>
 #include "utils.h"
 
 // Envia todos os bytes do buffer
@@ -25,8 +20,8 @@ int send_all(int s, char *buf, int len) {
 // Recebe todos os bytes enviados por send_all
 int recv_all(int sock_fd, char * buf) {
     char message[MAXLINE];
-    char copy_buffer[MAXLINE]; // copia da mensagem
-    char body[MAX_BODY_SIZE]; // armazena o corpo da mensagem, só vai ser passado como parâmetro
+    char copy_buffer[MAXLINE] = ""; // Cópia da mensagem
+    char body[MAX_BODY_SIZE]; // Armazena o corpo da mensagem, só vai ser passado como parâmetro e não usado
     int total_size = -2; // -2 marca que ainda não foi inicializado
 
     while (true) {
@@ -35,14 +30,16 @@ int recv_all(int sock_fd, char * buf) {
             perror("recv");
             return n;
         } else if (n == 0) {
-            printf("str_cli: server terminated prematurely\n");
+            printf("Peer terminated.\n");
             return n;
         } else {
             if (total_size == -2) {
+                strcpy(copy_buffer, message);
                 total_size = remove_cabecalho(copy_buffer, body);
             }
             strcat(buf, message);
-            if (strlen(message) * sizeof(char) == total_size) {
+            int curr_size = strlen(buf) * sizeof(char);
+            if (curr_size == total_size) {
                 return total_size;
             }
         }
@@ -50,37 +47,16 @@ int recv_all(int sock_fd, char * buf) {
     }
 }
 
-// Verifica se o header representa o servidor, se sim retorna o tamanho, se não retorna -1
-int verificar_header(char * header) {
-    int size, role, operation;
-
-    // Tamanho
+// Quebra a string em tokens para obter o tamanho da mensagem e o retorna
+int obtem_tamanho(char * header) {
     char *token = strtok(header, "=");
     token = strtok(NULL, "\n");
-    size = atoi(token);
-
-    // Role
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    role = atoi(token);
-    // Como o servidor tem role = 2, verifica isso
-    if (role != 2) {
-        return -1;
-    }
-
-    // Operação
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    operation = atoi(token);
-    // Como o servidor tem operation = -1, verifica isso
-    if (operation != -1) {
-        return -1;
-    }
+    int size = atoi(token);
 
     return size;
 }
 
-// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna -1 se houver erro e o tamanho do body caso contrário
+// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna o tamanho da mensagem
 int remove_cabecalho(char * message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[MAX_HEADER_SIZE] = "";
@@ -114,9 +90,7 @@ int remove_cabecalho(char * message, char * body) {
 
     // Token removeu o \n final do corpo, adicionamos de volta
     strcat(strBody, "\n");
-
-    // Exibindo o conteúdo separado
-    int declared_size = verificar_header(strHeader);
+    int declared_size = obtem_tamanho(strHeader);
     strcpy(body, strBody);
 
     return declared_size;
@@ -135,6 +109,9 @@ void troca_size(char *str, int size) {
 // Anexa cabeçalho da operação ao corpo da mensagem
 void anexar_header_operacao(char * message , int operacao, int role){
     char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
+    // Role = 1 é admin, 0 é usuário normal e 2 é servidor
+    // Operation = -1 é exclusiva do servidor
+
 
     // Copia a mensagem para um buffer temporário
     strcat(strMessage, message);

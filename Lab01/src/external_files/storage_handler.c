@@ -3,7 +3,7 @@
 #include <string.h>
 #include "storage_handler.h"
 
-#define MAX_LINE_LENGTH 256
+#define MAX_LINE_LENGTH 512 // Tamanho máximo de cada linha do arquivo
 
 // Lê as músicas do arquivo e as armazena em uma lista, retorna o número de músicas lidas
 int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {

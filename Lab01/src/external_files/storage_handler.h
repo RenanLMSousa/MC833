@@ -3,7 +3,7 @@
 
 #include "../music/music.h"
 
-#define MAX_SONGS 100
+#define MAX_SONGS 20
 #define FILEPATH "../../storage/music_list.csv"
 
 // Lê as músicas do arquivo e as armazena em uma lista

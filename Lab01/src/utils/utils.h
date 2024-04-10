@@ -6,8 +6,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/socket.h>
 
-#define MAXLINE 10000 // Tamanho máximo da linha
+#define MAXLINE 10000
 #define MAX_HEADER_SIZE 1000
 #define MAX_BODY_SIZE 30000
 
@@ -17,10 +18,10 @@ int send_all(int s, char *buf, int len);
 // Recebe todos os bytes enviados por send_all
 int recv_all(int sock_fd, char *buf);
 
-// Verifica se o header representa o servidor, se sim retorna o tamanho, se não retorna -1
-int verificar_header(char *header);
+// Quebra a string em tokens para obter o tamanho da mensagem e o retorna
+int obtem_tamanho(char * header);
 
-// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna -1 se houver erro e o tamanho do body caso contrário
+// Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna o tamanho da mensagem
 int remove_cabecalho(char *message, char *body);
 
 // Função auxiliar para substituir o tamanho no cabeçalho

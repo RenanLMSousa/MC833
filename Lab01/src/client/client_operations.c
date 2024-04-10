@@ -5,7 +5,6 @@
 #include "../external_files/storage_handler.h"
 #include "../utils/utils.h"
 
-#define MAXLINE 3000
 #define MAX_INT_STR 12
 #define true 1
 
