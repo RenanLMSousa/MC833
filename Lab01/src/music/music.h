@@ -3,9 +3,9 @@
 
 #define TITLE_LENGTH 100
 #define PERFORMER_LENGTH 100
-#define LANGUAGE_LENGTH 50
-#define MUSIC_TYPE_LENGTH 50
-#define CHORUS_LENGTH 1000
+#define LANGUAGE_LENGTH 100
+#define MUSIC_TYPE_LENGTH 100
+#define CHORUS_LENGTH 3000
 
 struct music {
     int identifier;
@@ -17,7 +17,8 @@ struct music {
     int release_year;
 };
 
-// Function prototype to print music details
 void print_music_details(struct music my_music);
+void music_to_string_reduced(struct music my_music, char * buffer);
 void music_to_string(struct music my_music, char *buffer);
+struct music string_to_music(char * str);
 #endif /* MUSIC_H */

@@ -3,9 +3,9 @@
 #include <string.h>
 #include "storage_handler.h"
 
-#define MAX_LINE_LENGTH 256
+#define MAX_LINE_LENGTH 512 // Tamanho máximo de cada linha do arquivo
 
-// Função para ler as músicas do arquivo e armazená-las em uma lista
+// Lê as músicas do arquivo e as armazena em uma lista, retorna o número de músicas lidas
 int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
@@ -18,8 +18,8 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     // Lê cada linha do arquivo
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
-        // Quebra a linha em campos separados por vírgula
-        char *token = strtok(line, ",");
+        // Quebra a linha em campos separados por |
+        char *token = strtok(line, "|");
         int i = 0;
         while (token != NULL) {
             switch (i) {
@@ -40,11 +40,14 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
                     break;
                 case 5:
                     strncpy(music_list[num_songs].chorus, token, CHORUS_LENGTH);
+                    break;
                 case 6:
                     music_list[num_songs].release_year = atoi(token);
                     break;
+                default:
+                    break;
             }
-            token = strtok(NULL, ",");
+            token = strtok(NULL, "|");
             i++;
         }
         num_songs++;
@@ -53,4 +56,27 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
     fclose(file);
 
     return num_songs;
+}
+
+// Escreve as musicas de uma lista no arquivo
+void write_music_list(struct music music_list[MAX_SONGS], int n, const char *filename) {
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo %s\n", filename);
+        return;
+    }
+
+    // Escreve cada música na lista no arquivo CSV
+    for (int i = 0; i < n; i++) {
+        fprintf(file, "%d|%s|%s|%s|%s|%s|%d\n",
+                music_list[i].identifier,
+                music_list[i].title,
+                music_list[i].performer,
+                music_list[i].language,
+                music_list[i].music_type,
+                music_list[i].chorus,
+                music_list[i].release_year);
+    }
+
+    fclose(file);
 }
