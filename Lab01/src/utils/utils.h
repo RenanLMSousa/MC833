@@ -19,15 +19,15 @@ int send_all(int s, char *buf, int len);
 int recv_all(int sock_fd, char *buf);
 
 // Quebra a string em tokens para obter o tamanho da mensagem e o retorna
-int obtem_tamanho(char * header);
+int get_size(char * header);
 
 // Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna o tamanho da mensagem
-int remove_cabecalho(char *message, char *body);
+int remove_header(char *message, char *body);
 
 // Função auxiliar para substituir o tamanho no cabeçalho
-void troca_size(char *str, int size);
+void set_size(char *str, int size);
 
-// Anexa cabeçalho da operação ao corpo da mensagem
-void anexar_header_operacao(char *message, int operacao, int role);
+// Monta a mensagem
+void build_message(char * message , int operation, int role);
 
 #endif /* UTILS_H */

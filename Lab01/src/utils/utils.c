@@ -35,7 +35,7 @@ int recv_all(int sock_fd, char * buf) {
         } else {
             if (total_size == -2) {
                 strcpy(copy_buffer, message);
-                total_size = remove_cabecalho(copy_buffer, body);
+                total_size = remove_header(copy_buffer, body);
             }
             strcat(buf, message);
             int curr_size = strlen(buf) * sizeof(char);
@@ -48,7 +48,7 @@ int recv_all(int sock_fd, char * buf) {
 }
 
 // Quebra a string em tokens para obter o tamanho da mensagem e o retorna
-int obtem_tamanho(char * header) {
+int get_size(char * header) {
     char *token = strtok(header, "=");
     token = strtok(NULL, "\n");
     int size = atoi(token);
@@ -57,7 +57,7 @@ int obtem_tamanho(char * header) {
 }
 
 // Remove o cabeçalho do servidor, escrevendo o corpo em body, retorna o tamanho da mensagem
-int remove_cabecalho(char * message, char * body) {
+int remove_header(char * message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[MAX_HEADER_SIZE] = "";
     char strBody[MAX_BODY_SIZE] = "";
@@ -90,38 +90,39 @@ int remove_cabecalho(char * message, char * body) {
 
     // Token removeu o \n final do corpo, adicionamos de volta
     strcat(strBody, "\n");
-    int declared_size = obtem_tamanho(strHeader);
+    int declared_size = get_size(strHeader);
     strcpy(body, strBody);
 
     return declared_size;
 }
 
 // Função auxiliar para substituir o tamanho no cabeçalho
-void troca_size(char *str, int size) {
+void set_size(char *str, int size) {
     char sizeStr[7];
-    sprintf(sizeStr, "%06d", size); // Converte inteiro para string com 0s na frente
-    char *placeholder = strstr(str, "000000"); // Encontra os 0s na string
+    // Converte inteiro para string com 0s na frente
+    sprintf(sizeStr, "%06d", size);
+    // Encontra os 0s na string
+    char *placeholder = strstr(str, "000000"); 
+
+    // Faz a substituição
     if (placeholder != NULL) {
-        memcpy(placeholder, sizeStr, strlen(sizeStr)); // Faz a substituição
+        memcpy(placeholder, sizeStr, strlen(sizeStr));
     }
 }
 
-// Anexa cabeçalho da operação ao corpo da mensagem
-void anexar_header_operacao(char * message , int operacao, int role){
+// Monta a mensagem
+void build_message(char * message , int operation, int role){
     char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
-    // Role = 1 é admin, 0 é usuário normal e 2 é servidor
-    // Operation = -1 é exclusiva do servidor
-
 
     // Copia a mensagem para um buffer temporário
     strcat(strMessage, message);
     strcat(strMessage,"\n");
 
     // Calcula o tamanho da mensagem
-    sprintf(strOut, "#HEADER\nSize=000000\nRole=%d\nOperation=%d\n#BODY\n", role, operacao);
+    sprintf(strOut, "#HEADER\nSize=000000\nRole=%d\nOperation=%d\n#BODY\n", role, operation);
     strcat(strOut, strMessage);
     int size = strlen(strOut) * sizeof(char);
-    troca_size(strOut, size);
+    set_size(strOut, size);
 
     // Coloca a mensagem com o cabeçalho na variável original
     strcpy(message, strOut);

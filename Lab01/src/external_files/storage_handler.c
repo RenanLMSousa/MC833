@@ -21,6 +21,7 @@ int read_music_list(struct music music_list[MAX_SONGS], const char *filename) {
         // Quebra a linha em campos separados por |
         char *token = strtok(line, "|");
         int i = 0;
+        // Continua obtendo os campos e salvando-os na estrutura até terminar a linha
         while (token != NULL) {
             switch (i) {
                 case 0:

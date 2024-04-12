@@ -13,13 +13,13 @@
 #include <arpa/inet.h>
 
 // Definições para operações
-#define CADASTRAR_UMA_MUSICA 1
-#define REMOVER_UMA_MUSICA 2
-#define LISTAR_MUSICAS_POR_ANO 3
-#define LISTAR_MUSICAS_POR_IDIOMA_E_ANO 4
-#define LISTAR_MUSICAS_POR_TIPO 5
-#define LISTAR_INFO_MUSICA_POR_ID 6
-#define LISTAR_TODAS_INFOS_MUSICAS 7
+#define REGISTER_SONG 1
+#define REMOVE_SONG 2
+#define LIST_SONGS_BY_YEAR 3
+#define LIST_SONGS_BY_LANGUAGE_AND_YEAR 4
+#define LIST_SONGS_BY_TYPE 5
+#define LIST_SONG_INFO_BY_ID 6
+#define LIST_ALL_SONGS_INFO 7
 
 #define MAX_HEADER_SIZE 1000
 #define MAX_BODY_SIZE 30000
@@ -31,24 +31,24 @@ int send_all(int s, char * buf, int len);
 int recv_all(int sock_fd, char * buf);
 
 // Cadastra uma nova música
-void cadastrar_musica(int sock_fd, struct music nova_musica, int role);
+void register_song(int sock_fd, struct music new_song, int role);
 
 // Remove uma música a partir de seu identificador
-void remover_musica(int sock_fd, int identifier, int role);
+void remove_song(int sock_fd, int identifier, int role);
 
 // Lista todas as músicas lançadas em um determinado ano
-void listar_musicas_por_ano(int sock_fd, int year, int role);
+void list_songs_by_year(int sock_fd, int year, int role);
 
 // Lista todas as músicas em um dado idioma lançadas em um certo ano
-void listar_musicas_por_idioma_e_ano(int sock_fd, char *idioma, int year, int role);
+void list_songs_by_language_and_year(int sock_fd, char * language, int year, int role);
 
 // Lista todas as músicas de um certo tipo
-void listar_musicas_por_tipo(int sock_fd, char *tipo, int role);
+void list_songs_by_type(int sock_fd, char * type, int role);
 
 // Lista todas as informações de uma música dado o seu identificador
-void listar_info_musica_por_id(int sock_fd, int identifier, int role);
+void list_song_info_by_id(int sock_fd, int identifier, int role);
 
 // Lista todas as informações de todas as músicas
-void listar_todas_infos_musicas(int sock_fd, int role);
+void list_all_songs_info(int sock_fd, int role);
 
 #endif /* CLIENT_OPERATIONS_H */

@@ -62,7 +62,9 @@ void print_menu() {
 int read_int(int isId) {
     int valid_input = 0, i, integer;
     char buffer[3000];
+    // Até que um input valido seja enviado, continua perguntando
     while (!valid_input) {
+        // Como ints são usados para IDs e anos, fazemos a distinção
         if (isId) {
             printf("Enter identifier: \n");
         }
@@ -72,11 +74,13 @@ int read_int(int isId) {
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strcspn(buffer, "\n")] = '\0';
         for (i = 0; buffer[i] != '\0'; i++) {
+            // Verifica char por char se sao todos digitos
             if (!isdigit(buffer[i])) {
                 printf("Invalid input. Please enter an integer.\n");
                 break; 
             }
         }
+        // Garante que a iteração anterior chegou até o fim da string
         if (buffer[i] == '\0') {
             integer = atoi(buffer);
             valid_input = 1;
@@ -104,8 +108,9 @@ void do_client_stuff(int sock_fd) {
         operation = atoi(buffer);
         memset(sendline, 0, sizeof(sendline));
         switch (operation)
+            // Executa a operação de acordo com o código
             {
-            case CADASTRAR_UMA_MUSICA: {
+            case REGISTER_SONG: {
                 struct music my_music;
                 my_music.identifier = read_int(1);
                 
@@ -131,25 +136,25 @@ void do_client_stuff(int sock_fd) {
 
                 my_music.release_year = read_int(0);
 
-                cadastrar_musica(sock_fd, my_music, role);
+                register_song(sock_fd, my_music, role);
                 break;
             }
-            case REMOVER_UMA_MUSICA: {
+            case REMOVE_SONG: {
                 int identifier = read_int(1);
-                remover_musica(sock_fd, identifier, role);
+                remove_song(sock_fd, identifier, role);
                 break;
                 }
-            case LISTAR_MUSICAS_POR_ANO: {
+            case LIST_SONGS_BY_YEAR: {
                 char buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
                 int year;
 
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_ano(sock_fd, year, role);
+                list_songs_by_year(sock_fd, year, role);
                 break;
                 }
-            case LISTAR_MUSICAS_POR_IDIOMA_E_ANO: {
+            case LIST_SONGS_BY_LANGUAGE_AND_YEAR: {
                 char language[LANGUAGE_LENGTH], buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
                 int year;
 
@@ -158,37 +163,40 @@ void do_client_stuff(int sock_fd) {
                 printf("Enter year: ");
                 fgets(buffer, sizeof(buffer), stdin);
                 year = atoi(buffer);
-                listar_musicas_por_idioma_e_ano(sock_fd, language, year, role);
+                list_songs_by_language_and_year(sock_fd, language, year, role);
                 break;
                 }
-            case LISTAR_MUSICAS_POR_TIPO: {
+            case LIST_SONGS_BY_TYPE: {
                 char music_type[MUSIC_TYPE_LENGTH];
 
                 printf("Enter music type: ");
                 fgets(music_type, sizeof(music_type), stdin);
-                listar_musicas_por_tipo(sock_fd, music_type, role);
+                list_songs_by_type(sock_fd, music_type, role);
                 break;
                 }
-            case LISTAR_INFO_MUSICA_POR_ID: {
+            case LIST_SONG_INFO_BY_ID: {
                 int identifier = read_int(1);
-                listar_info_musica_por_id(sock_fd, identifier, role);
+                list_song_info_by_id(sock_fd, identifier, role);
                 break;
                 }
-            case LISTAR_TODAS_INFOS_MUSICAS:
-                listar_todas_infos_musicas(sock_fd, role);
+            case LIST_ALL_SONGS_INFO:
+                list_all_songs_info(sock_fd, role);
                 break;
             default:
+                // Operação para encerrrar a execução
                 return;
         }
 
         // Recebe a resposta do servidor após a operação
         int n;
         if ((n = recv_all(sock_fd, sendline)) == 0) {
+            // Se não recebeu nada, o servidor está com problema
             printf("str_cli: server terminated prematurely\n");
         }
         else {
+            // Remove o cabeçalho e imprime pro cliente o resultado da operação
             char body[MAX_BODY_SIZE] = "";
-            int error = remove_cabecalho(sendline, body);
+            int error = remove_header(sendline, body);
             if (error == -1) {
                 printf("Broken message.\n");
             }
@@ -200,11 +208,11 @@ void do_client_stuff(int sock_fd) {
 int main() {
     int sock_fd;
     struct sockaddr_in servaddr;
-    configuracao serverConfig;
+    configuration serverConfig;
 
     printf("Reading configs\n");
-    serverConfig =  ler_configuracao("../../server.config");
-    printf("Requesting to IP:%s | PORT: %s\n",serverConfig.ip,serverConfig.porta);
+    serverConfig =  read_configuration("../../server.config");
+    printf("Requesting to IP:%s | PORT: %s\n",serverConfig.ip,serverConfig.port);
     
     // Criando o socket
     sock_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -212,7 +220,7 @@ int main() {
     // Configurando o endereço do servidor
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(atoi(serverConfig.porta));
+    servaddr.sin_port = htons(atoi(serverConfig.port));
     servaddr.sin_addr.s_addr = htons(atoi(serverConfig.ip));
     inet_pton(AF_INET, serverConfig.ip, &servaddr.sin_addr);
 
@@ -228,7 +236,7 @@ int main() {
     }
 
     char body[MAX_BODY_SIZE];
-    int error = remove_cabecalho(buf, body);
+    int error = remove_header(buf, body);
     if (error == -1) {
         printf("Broken confirmation message.\n");
         exit(EXIT_FAILURE);

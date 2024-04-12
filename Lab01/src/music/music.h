@@ -17,8 +17,16 @@ struct music {
     int release_year;
 };
 
+// Imprime os campos da estrutura music
 void print_music_details(struct music my_music);
+
+// Adiciona ao buffer os campos identifier, title e performer de uma música
 void music_to_string_reduced(struct music my_music, char * buffer);
+
+// Adiciona ao buffer todos os campos da música
 void music_to_string(struct music my_music, char *buffer);
+
+// Retorna uma estrutura com as informações de str
 struct music string_to_music(char * str);
+
 #endif /* MUSIC_H */

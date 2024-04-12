@@ -9,11 +9,12 @@
 #define true 1
 
 // Cadastra uma nova música
-void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
+void register_song(int sock_fd, struct music new_song, int role) {
     char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "";
-    music_to_string(nova_musica, strMusic);
+    music_to_string(new_song, strMusic);
 
-    anexar_header_operacao(strMusic, CADASTRAR_UMA_MUSICA, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(strMusic, REGISTER_SONG, role);
     if (send_all(sock_fd, strMusic, strlen(strMusic)) < 0) {
         perror("str_echo: send error");
         return;
@@ -21,12 +22,13 @@ void cadastrar_musica(int sock_fd, struct music nova_musica, int role) {
 }
 
 // Remove uma música a partir de seu identificador
-void remover_musica(int sock_fd, int identifier, int role) {
+void remove_song(int sock_fd, int identifier, int role) {
     char strId[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
-    anexar_header_operacao(message, REMOVER_UMA_MUSICA, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, REMOVE_SONG, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -34,12 +36,13 @@ void remover_musica(int sock_fd, int identifier, int role) {
 }
 
 // Lista todas as músicas lançadas em um determinado ano
-void listar_musicas_por_ano(int sock_fd, int year, int role) {
+void list_songs_by_year(int sock_fd, int year, int role) {
     char strYear[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "ReleaseYear=";
     sprintf(strYear, "%d\n", year);
     strcat(message, strYear);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_ANO, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, LIST_SONGS_BY_YEAR, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -47,14 +50,15 @@ void listar_musicas_por_ano(int sock_fd, int year, int role) {
 }
 
 // Lista todas as músicas em um dado idioma lançadas em um certo ano
-void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int role) {
+void list_songs_by_language_and_year(int sock_fd, char * language, int year, int role) {
     char strYear[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Language=";
-    strcat(message, idioma);
+    strcat(message, language);
     strcat(message, "ReleaseYear=");
     sprintf(strYear, "%d\n", year);
     strcat(message, strYear);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_IDIOMA_E_ANO, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, LIST_SONGS_BY_LANGUAGE_AND_YEAR, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -62,11 +66,12 @@ void listar_musicas_por_idioma_e_ano(int sock_fd, char * idioma, int year, int r
 }
 
 // Lista todas as músicas de um certo tipo
-void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
+void list_songs_by_type(int sock_fd,  char * type, int role) {
     char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "MusicType=";
-    strcat(message, tipo);
+    strcat(message, type);
 
-    anexar_header_operacao(message, LISTAR_MUSICAS_POR_TIPO, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, LIST_SONGS_BY_TYPE, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -74,12 +79,13 @@ void listar_musicas_por_tipo(int sock_fd,  char *tipo, int role) {
 }
 
 // Lista todas as informações de uma música dado o seu identificador
-void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
+void list_song_info_by_id(int sock_fd, int identifier, int role) {
     char strId[MAX_INT_STR], message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "Identifier=";
     sprintf(strId, "%d\n", identifier);
     strcat(message, strId);
 
-    anexar_header_operacao(message, LISTAR_INFO_MUSICA_POR_ID, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, LIST_SONG_INFO_BY_ID, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;
@@ -87,10 +93,11 @@ void listar_info_musica_por_id(int sock_fd, int identifier, int role) {
 }
 
 // Lista todas as informações de todas as músicas
-void listar_todas_infos_musicas(int sock_fd, int role) {
+void list_all_songs_info(int sock_fd, int role) {
     char message[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "";
     
-    anexar_header_operacao(message, LISTAR_TODAS_INFOS_MUSICAS, role);
+    // Forma a string da mensagem e envia para o servidor
+    build_message(message, LIST_ALL_SONGS_INFO, role);
     if (send_all(sock_fd, message, strlen(message)) < 0) {
         perror("str_echo: send error");
         return;

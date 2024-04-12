@@ -41,6 +41,7 @@ struct _header extract_header(char * strHeader){
     return header;
 }
 
+// Separa header de body, preenchendo o vetor body e retornando a estrutura header
 struct _header read_message(char * _message, char * body) {
     // Variáveis para armazenar o conteúdo do #HEADER e #BODY
     char strHeader[MAX_HEADER_SIZE] = "";
@@ -68,7 +69,6 @@ struct _header read_message(char * _message, char * body) {
         token = strtok(NULL, "\n");
     }
 
-    // Exibindo o conteúdo separado
     strcpy(body,strBody);
     return extract_header(strHeader);
 }
@@ -89,29 +89,32 @@ again:
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
-            case CADASTRAR_UMA_MUSICA:       
+            case REGISTER_SONG:       
                 // Verifica se o usuário é admin     
                 if (role == 1) {
-                    error = cadastrar_musica(body);
+                    error = register_song(body);
+                    // Lida com erro de id já utilizado
                     if (error == 1) {
                         char err_msg[] = "This id is already in use.\n";
-                        anexar_header_operacao(err_msg, -1, 2);
+                        build_message(err_msg, -1, 2);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
                     }
+                    // Lida com erro de limite de músicas
                     else if (error == 2) {
                         char err_msg[] = "You have reached the limit number of songs.\n";
-                        anexar_header_operacao(err_msg, -1, 2);
+                        build_message(err_msg, -1, 2);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
                     }
+                    // Operação concluída
                     else {
                         char msg[] = "Song registered.\n";
-                        anexar_header_operacao(msg, -1, 2);
+                        build_message(msg, -1, 2);
                         if (send_all(new_fd, msg, strlen(msg)) < 0) {
                             perror("str_echo: send error");
                             return;
@@ -120,28 +123,30 @@ again:
                 }
                 else {
                     char err_msg[] = "This operation is not available to regular users.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case REMOVER_UMA_MUSICA:
+            case REMOVE_SONG:
                 // Verifica se o usuário é admin  
                 if (role == 1) {
-                    error = remover_musica(body);
+                    error = remove_song(body);
                     if (error == 1) {
+                        // Lida com erro de música não encontrada
                         char err_msg[] = "Song not found.\n";
-                        anexar_header_operacao(err_msg, -1, 2);
+                        build_message(err_msg, -1, 2);
                         if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                             perror("str_echo: send error");
                             return;
                         }
                     }
                     else {
+                        // Operação concluída
                         char msg[] = "Song deleted.\n";
-                        anexar_header_operacao(msg, -1, 2);
+                        build_message(msg, -1, 2);
                         if (send_all(new_fd, msg, strlen(msg)) < 0) {
                             perror("str_echo: send error");
                             return;
@@ -150,97 +155,107 @@ again:
                 }
                 else {
                     char err_msg[] = "This operation is not available to regular users.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case LISTAR_MUSICAS_POR_ANO:
-                counter = listar_musicas_por_ano(body, strMusic);
+            case LIST_SONGS_BY_YEAR:
+                counter = list_songs_by_year(body, strMusic);
                 if (counter == 0) {
+                    // Lida com erro de música não encontrada
                     char err_msg[] = "No songs found.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else { 
-                    anexar_header_operacao(strMusic, -1, 2);
+                    // Operação concluída
+                    build_message(strMusic, -1, 2);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case LISTAR_MUSICAS_POR_IDIOMA_E_ANO:
-                counter = listar_musicas_por_idioma_e_ano(body, strMusic);
+            case LIST_SONGS_BY_LANGUAGE_AND_YEAR:
+                counter = list_songs_by_language_and_year(body, strMusic);
                 if (counter == 0) {
+                    // Lida com erro de música não encontrada
                     char err_msg[] = "No songs found.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    anexar_header_operacao(strMusic, -1, 2);
+                    // Operação concluída
+                    build_message(strMusic, -1, 2);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case LISTAR_MUSICAS_POR_TIPO:
-                counter = listar_musicas_por_tipo(body, strMusic);
+            case LIST_SONGS_BY_TYPE:
+                counter = list_songs_by_type(body, strMusic);
                 if (counter == 0) {
+                    // Lida com erro de música não encontrada
                     char err_msg[] = "No songs found.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    anexar_header_operacao(strMusic, -1, 2);
+                    // Operação concluída
+                    build_message(strMusic, -1, 2);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case LISTAR_INFO_MUSICA_POR_ID:
-                error = listar_info_musica_por_id(body, strMusic);
+            case LIST_SONG_INFO_BY_ID:
+                error = list_song_info_by_id(body, strMusic);
                 if (error == 1) {
+                    // Lida com erro de música não encontrada
                     char err_msg[] = "Song not found.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    anexar_header_operacao(strMusic, -1, 2);
+                    // Operação concluída
+                    build_message(strMusic, -1, 2);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 break;
-            case LISTAR_TODAS_INFOS_MUSICAS:
-                counter = listar_todas_infos_musicas(strMusic);
+            case LIST_ALL_SONGS_INFO:
+                counter = list_all_songs_info(strMusic);
                 if (counter == 0) {
+                    // Lida com erro de lista de músicas vazia
                     char err_msg[] = "No songs to list.\n";
-                    anexar_header_operacao(err_msg, -1, 2);
+                    build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
                 }
                 else {
-                    anexar_header_operacao(strMusic, -1, 2);
+                    // Operação concluída
+                    build_message(strMusic, -1, 2);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -261,10 +276,10 @@ again:
 
 
 int main() {
-    configuracao serverConfig;
+    configuration serverConfig;
     printf("Reading configs\n");
-    serverConfig =  ler_configuracao("../../server.config");
-    printf("Initializing server, hearing on PORT: %s\n",serverConfig.porta);
+    serverConfig =  read_configuration("../../server.config");
+    printf("Initializing server, hearing on PORT: %s\n",serverConfig.port);
 
     int sock_fd, new_fd;
     pid_t childpid;
@@ -277,7 +292,7 @@ int main() {
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(atoi(serverConfig.porta));
+    servaddr.sin_port = htons(atoi(serverConfig.port));
     
     // Associação do socket ao endereço do servidor
     bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
@@ -292,7 +307,7 @@ int main() {
 
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.\n";
-        anexar_header_operacao(conf_message, -1, 2);
+        build_message(conf_message, -1, 2);
         if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
             perror("str_echo: send error");
             exit(0);
