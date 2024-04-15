@@ -24,12 +24,6 @@
 #define MAX_HEADER_SIZE 1000
 #define MAX_BODY_SIZE 30000
 
-// Envia todos os bytes do buffer
-int send_all(int s, char * buf, int len);
-
-// Recebe todos os bytes enviados por send_all
-int recv_all(int sock_fd, char * buf);
-
 // Cadastra uma nova música
 void register_song(int sock_fd, struct music new_song, int role);
 
