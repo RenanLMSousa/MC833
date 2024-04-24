@@ -59,6 +59,10 @@
   "files.associations": {
     "client_operations.h": "c",
     "system_error": "c",
-    "storage_handler.h": "c"
+    "storage_handler.h": "c",
+    "server_operations.h": "c",
+    "stdio.h": "c",
+    "string.h": "c",
+    "config_handler.h": "c"
   }
 }
