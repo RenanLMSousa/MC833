@@ -9,6 +9,7 @@
 #include "../external_files/config_handler.h"
 #include "../utils/utils.h"
 #include "server_operations.h"
+#include <sys/select.h>
 
 #define SA struct sockaddr
 #define LISTENQ 20
@@ -281,12 +282,13 @@ int main() {
     serverConfig =  read_configuration("../../server.config");
     printf("Initializing server, hearing on PORT: %s\n",serverConfig.port);
 
-    int sock_fd, new_fd;
+    int sock_fd_tcp,sock_fd_udp, new_fd;
     pid_t childpid;
     socklen_t clilen;
+    fd_set rset;
     struct sockaddr_in cliaddr, servaddr;
     // Criação do socket
-    sock_fd = socket(PF_INET, SOCK_STREAM, 0);
+    sock_fd_tcp = socket(PF_INET, SOCK_STREAM, 0);
 
     // Configuração do endereço do servidor
     bzero(&servaddr, sizeof(servaddr));
@@ -294,16 +296,31 @@ int main() {
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(atoi(serverConfig.port));
     
+    const int on =1;
+    setsockopt(sock_fdp_tcp,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
     // Associação do socket ao endereço do servidor
-    bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
+    bind(sock_fd_tcp, (SA *) &servaddr, sizeof(servaddr));
     // Definição do socket para escutar conexões
-    listen(sock_fd, LISTENQ);
+    listen(sock_fd_tcp, LISTENQ);
+
+    //Criação socket UDP
+
+    sock_fd_udp = socket(AF_INET,SOCK_DGRAM,0);
+
+    bzero(&serveraddr,sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(atoi(serverConfig.porta));
+    bind(sock_fd_udp , (SA*) &servaddr, sizeof(servaddr));
+
+    FD_ZERO(&rset);
+    int maxfdp1 = max(sock_fd_tcp,sock_fd_udp) +1;
 
     for (;;) {
         clilen = sizeof(cliaddr);
 
         // Aceitar conexões entrantes
-        new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
+        new_fd = accept(sock_fd_tcp, (SA *) &cliaddr, &clilen);
 
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.\n";
@@ -316,7 +333,7 @@ int main() {
 
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
-            close(sock_fd); /* fechar o socket de escuta */
+            close(sock_fd_tcp); /* fechar o socket de escuta */
             // Processar a solicitação
             do_server_stuff(new_fd);
 

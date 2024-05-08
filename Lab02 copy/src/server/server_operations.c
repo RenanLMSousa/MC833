@@ -8,9 +8,9 @@
 #define true 1
 
 // Cadastra uma nova música, retorna 1 se não foi possivel cadastrar
-int cadastrar_musica(char * body) {
+int register_song(char * body) {
     struct music my_music = string_to_music(body), music_list[MAX_SONGS];
-    
+    // Armazena todas as músicas em memória
     int n = read_music_list(music_list, FILEPATH);
     // Verifica se o identificador já está em uso
     for (int i = 0; i < n; i++) {
@@ -30,7 +30,7 @@ int cadastrar_musica(char * body) {
 }
 
 // Remove uma música a partir de seu identificador, retorna 1 se não existe música com esse identificador
-int remover_musica(char * body) {
+int remove_song(char * body) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int identifier;
@@ -69,7 +69,7 @@ int remover_musica(char * body) {
 }
 
 // Lista todas as músicas lançadas em um determinado ano, retorna o número de músicas encontradas
-int listar_musicas_por_ano(char * body, char * output) {
+int list_songs_by_year(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int year;
@@ -80,6 +80,8 @@ int listar_musicas_por_ano(char * body, char * output) {
 
     int counter = 0;
     int n = read_music_list(music_list, FILEPATH);
+
+    // Percorre a lista de músicas e adiciona no output aquelas com ano correto
     for (int i = 0; i < n; i++) {
         if (music_list[i].release_year == year) {
             music_to_string_reduced(music_list[i], output);
@@ -91,7 +93,7 @@ int listar_musicas_por_ano(char * body, char * output) {
 }
 
 // Lista todas as músicas em um dado idioma lançadas em um certo ano, retorna o número de músicas encontradas
-int listar_musicas_por_idioma_e_ano(char * body, char * output) {
+int list_songs_by_language_and_year(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     char language[LANGUAGE_LENGTH];
@@ -105,6 +107,7 @@ int listar_musicas_por_idioma_e_ano(char * body, char * output) {
     token = strtok(NULL, "\n");
     year = atoi(token);
 
+    // Percorre a lista de músicas e adiciona no output aquelas com ano e linguagem corretos
     int counter = 0;
     int n = read_music_list(music_list, FILEPATH);
     for (int i = 0; i < n; i++) {
@@ -118,7 +121,7 @@ int listar_musicas_por_idioma_e_ano(char * body, char * output) {
 }
 
 // Lista todas as músicas de um certo tipo, retorna o número de músicas encontradas
-int listar_musicas_por_tipo(char * body, char * output) {
+int list_songs_by_type(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     char type[MUSIC_TYPE_LENGTH];
@@ -129,6 +132,8 @@ int listar_musicas_por_tipo(char * body, char * output) {
 
     int counter = 0;
     int n = read_music_list(music_list, FILEPATH);
+
+    // Percorre a lista de músicas e adiciona no output aquelas com tipo correto
     for (int i = 0; i < n; i++) {
         if (strcmp(music_list[i].music_type, type) == 0)  {
             music_to_string_reduced(music_list[i], output);
@@ -140,7 +145,7 @@ int listar_musicas_por_tipo(char * body, char * output) {
 }
 
 // Lista todas as informações de uma música dado o seu identificador, retorna 1 se não existe música com esse identificador
-int listar_info_musica_por_id(char * body, char * output) {
+int list_song_info_by_id(char * body, char * output) {
     struct music music_list[MAX_SONGS];
     char *token = strtok(body, "=");
     int identifier;
@@ -150,6 +155,8 @@ int listar_info_musica_por_id(char * body, char * output) {
     identifier = atoi(token);
 
     int n = read_music_list(music_list, FILEPATH);
+
+    // Percorre a lista de músicas e adiciona no output aquela com id correto
     for (int i = 0; i < n; i++) {
         if (music_list[i].identifier == identifier) {
             music_to_string(music_list[i], output);
@@ -162,10 +169,11 @@ int listar_info_musica_por_id(char * body, char * output) {
 }
 
 // Lista todas as informações de todas as músicas, retorna o número de músicas
-int listar_todas_infos_musicas(char * output) {
+int list_all_songs_info(char * output) {
     struct music music_list[MAX_SONGS];
     int n = read_music_list(music_list,FILEPATH);
     
+    // Percorre a lista de músicas e adiciona todas no output
     for(int i = 0 ; i < n; i++){
         music_to_string(music_list[i], output);
         strcat(output, "\n");

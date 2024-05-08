@@ -21,7 +21,7 @@ void append_string(char * buffer, char * key, char * value) {
     strcat(buffer, "\n");
 }
 
-// Adiciona no fim da string buffer uma chave e um inteiro
+// Adiciona no fim da string buffer uma string chave e um valor inteiro
 void append_int(char * buffer, char * key, int value) {
     char temp_buffer[12]; // Buffer temporário para converter int para string
     sprintf(temp_buffer, "%d", value);
@@ -44,6 +44,7 @@ void music_to_string(struct music my_music, char *buffer) {
     append_int(buffer, "ReleaseYear=", my_music.release_year);
 }
 
+// Retorna uma estrutura com as informações de str
 struct music string_to_music(char * str) {
     struct music my_music;
     char *token = strtok(str, "=");
