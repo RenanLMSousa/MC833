@@ -374,7 +374,7 @@ int main() {
         printf("Connection established.\n");
 
         usleep(1000);
-        send_to_client(serverConfig, "Teste abc batata\n");
+        send_to_client(serverConfig, "Teste abc1");
 
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
