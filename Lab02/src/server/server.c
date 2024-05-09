@@ -373,6 +373,7 @@ int main() {
         }
         printf("Connection established.\n");
 
+        usleep(1000);
         send_to_client(serverConfig, "Teste abc batata\n");
 
         // Criação de um processo filho para tratar a conexão
