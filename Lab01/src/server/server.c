@@ -9,6 +9,7 @@
 #include "../external_files/config_handler.h"
 #include "../utils/utils.h"
 #include "server_operations.h"
+#include <sys/select.h>
 
 #define SA struct sockaddr
 #define LISTENQ 20
@@ -274,19 +275,28 @@ again:
         perror("str_echo: read error");
 }
 
+void err_sys(const char* x) 
+{ 
+    perror(x); 
+    exit(1); 
+}
 
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+void sig_chld(int){};
 int main() {
     configuration serverConfig;
     printf("Reading configs\n");
     serverConfig =  read_configuration("../../server.config");
     printf("Initializing server, hearing on PORT: %s\n",serverConfig.port);
 
-    int sock_fd, new_fd;
+    int sock_fd_tcp,sock_fd_udp, new_fd;
     pid_t childpid;
     socklen_t clilen;
     struct sockaddr_in cliaddr, servaddr;
-    // Criação do socket
-    sock_fd = socket(PF_INET, SOCK_STREAM, 0);
+    // Criação do socket TCP
+    sock_fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
 
     // Configuração do endereço do servidor
     bzero(&servaddr, sizeof(servaddr));
@@ -294,36 +304,87 @@ int main() {
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(atoi(serverConfig.port));
     
+    const int on = 1;
+    setsockopt(sock_fd_tcp, SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
     // Associação do socket ao endereço do servidor
-    bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
+    bind(sock_fd_tcp, (SA *) &servaddr, sizeof(servaddr));
     // Definição do socket para escutar conexões
-    listen(sock_fd, LISTENQ);
+    listen(sock_fd_tcp, LISTENQ);
 
+    // Criação do socket UDP
+    sock_fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
+
+    // Configuração do endereço do servidor
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(atoi(serverConfig.port)+1);
+    
+    // Associação do socket ao endereço do servidor
+    bind(sock_fd_udp, (SA *) &servaddr, sizeof(servaddr));
+    // Definição do socket para escutar conexões
+
+    fd_set rset;
+    int maxfdp1;
+
+    signal(SIGCHLD,sig_chld);
+    FD_ZERO(&rset);
+
+    int nready;
+    char msg[MAXLINE];
+    maxfdp1 = max(sock_fd_tcp,sock_fd_udp) +1;
     for (;;) {
-        clilen = sizeof(cliaddr);
-
-        // Aceitar conexões entrantes
-        new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
-
-        // Envio de mensagem para confirmar conexão com cliente
-        char conf_message[] = "Connection established.\n";
-        build_message(conf_message, -1, 2);
-        if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
-            perror("str_echo: send error");
-            exit(0);
+        memset(msg, 0, sizeof(msg));
+        
+        FD_SET(sock_fd_tcp,&rset);
+        FD_SET(sock_fd_udp,&rset);
+        
+        if((nready=select(maxfdp1,&rset,NULL,NULL,NULL))<0){
+            if(errno == EINTR)
+                continue;
+            else
+                err_sys("select error");
         }
-        printf("Connection established.\n");
 
-        // Criação de um processo filho para tratar a conexão
-        if ((childpid = fork()) == 0) { /* processo filho */
-            close(sock_fd); /* fechar o socket de escuta */
-            // Processar a solicitação
-            do_server_stuff(new_fd);
+        if(FD_ISSET(sock_fd_tcp,&rset)){
 
-            exit(0);
+            clilen = sizeof(cliaddr);
+
+            // Aceitar conexões entrantes
+            new_fd = accept(sock_fd_tcp, (SA *) &cliaddr, &clilen);
+
+            // Envio de mensagem para confirmar conexão com cliente
+            char conf_message[] = "Connection established.\n";
+            build_message(conf_message, -1, 2);
+            if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
+                perror("str_echo: send error");
+                exit(0);
+            }
+            printf("Connection established.\n");
+
+            // Criação de um processo filho para tratar a conexão
+            if ((childpid = fork()) == 0) { /* processo filho */
+                close(sock_fd_tcp); /* fechar o socket de escuta */
+                // Processar a solicitação
+                do_server_stuff(new_fd);
+
+                exit(0);
+            }
+            // Pai fecha o socket conectado
+            close(new_fd);
+
         }
-        // Pai fecha o socket conectado
-        close(new_fd);
+
+        if(FD_ISSET(sock_fd_udp,&rset)){
+            
+            clilen = sizeof(cliaddr);
+            int n = recvfrom(sock_fd_udp,msg,MAXLINE,0,(SA*)&cliaddr,clilen);
+            sendto(sock_fd_udp,msg,n,0,(SA*)&cliaddr,clilen);
+            printf("%s\n",msg);
+            
+    
+        }
+
     }
     return 0;
 }

@@ -39,7 +39,7 @@ int recv_all(int sock_fd, char * buf) {
             }
             strcat(buf, message);
             int curr_size = strlen(buf) * sizeof(char);
-            if (curr_size == total_size) {
+            if (curr_size >= total_size) {
                 return total_size;
             }
         }

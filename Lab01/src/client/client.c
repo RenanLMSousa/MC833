@@ -16,6 +16,8 @@
 #define LISTENQ 20
 #define MAX_BUF_SIZE 3000
 
+configuration serverConfig;
+
 // Pergunta se o usuário quer rodar como administrador e retorna o resultado
 int run_admin() {
     char choice[20];
@@ -88,7 +90,32 @@ int read_int(int isId) {
     }
     return integer;
 }
+void dg_cli(FILE *fp, int sockfd,const SA*pservaddr,socklen_t servlen){
 
+    int n;
+    char sendline[MAXLINE],recvline[MAXLINE +1];
+
+    while(fgets(sendline,MAXLINE,fp)!= NULL){
+        sendto(sockfd,sendline,strlen(sendline),0,pservaddr,servlen);
+        n = recvfrom(sockfd,recvline,MAXLINE,0,NULL,NULL);
+        recvline[n] =0;
+        fputs(recvline,stdout);
+    }
+}
+void send_udp_message() {
+    int sockfd;
+    struct sockaddr_in servaddr;
+    
+    sockfd = socket(AF_INET,SOCK_DGRAM,0);
+
+    bzero(&servaddr,sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port =htons(atoi(serverConfig.port)+1);
+    inet_pton(AF_INET,serverConfig.ip,&servaddr.sin_addr);
+
+    dg_cli(stdin,sockfd,(SA*) &servaddr,sizeof(servaddr));
+    exit(0);
+}
 // Faz a lógica da interação entre cliente e servidor
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
@@ -182,6 +209,10 @@ void do_client_stuff(int sock_fd) {
             case LIST_ALL_SONGS_INFO:
                 list_all_songs_info(sock_fd, role);
                 break;
+            case 99:
+            printf("MESSAGE\n");                
+            send_udp_message();
+                break;
             default:
                 // Operação para encerrrar a execução
                 return;
@@ -208,7 +239,7 @@ void do_client_stuff(int sock_fd) {
 int main() {
     int sock_fd;
     struct sockaddr_in servaddr;
-    configuration serverConfig;
+
 
     printf("Reading configs\n");
     serverConfig =  read_configuration("../../server.config");
