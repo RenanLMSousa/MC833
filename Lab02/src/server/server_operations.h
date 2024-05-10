@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include "../external_files/config_handler.h"
 
 // Definições para operações
 #define LIST_SONGS_BY_TYPE 1
@@ -25,5 +26,8 @@ int list_songs_by_type(char * body, char * output);
 
 // Lista todas as informações de todas as músicas, retorna o número de músicas
 int list_all_songs_info(char * output);
+
+// Baixa uma música dado um identificador
+void download_song(char * body, configuration serverConfig);
 
 #endif /* SERVER_OPERATIONS_H */

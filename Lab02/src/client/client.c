@@ -57,7 +57,7 @@ int read_int(int isId) {
 }
 
 // Faz a lógica da interação entre cliente e servidor
-void do_client_stuff(int sock_fd) {
+void do_client_stuff(int sock_fd, configuration serverConfig) {
     // Executando a lógica do cliente
     int operation;
     char sendline[MAXLINE], buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
@@ -85,7 +85,7 @@ void do_client_stuff(int sock_fd) {
                 break;
             case DOWNLOAD_SONG: {
                 int identifier = read_int(1);
-                download_song(sock_fd, identifier);
+                download_song(sock_fd, identifier, serverConfig);
                 break;
                 }
             default:
@@ -111,123 +111,6 @@ void do_client_stuff(int sock_fd) {
     }
 }
 
-void *get_in_addr(struct sockaddr *sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
-int receive_from_server(configuration serverConfig, unsigned char * out) {
-    int sockfd;
-    struct addrinfo hints, *servinfo, *p;
-    int rv;
-    int numbytes;
-    struct sockaddr_storage their_addr;
-    char * buf = out;
-    socklen_t addr_len;
-    char s[INET_ADDRSTRLEN];
-    char strPort[100] = "";
-
-    strcpy(strPort, serverConfig.port);
-    strPort[strcspn(strPort, "\n")] = 0;
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    if ((rv = getaddrinfo(NULL, strPort, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
-
-    // Loop through all the results and bind to the first we can
-    for (p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-            perror("listener: socket");
-            continue;
-        }
-
-        if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-            close(sockfd);
-            perror("listener: bind");
-            continue;
-        }
-
-        break;
-    }
-
-    if (p == NULL) {
-        fprintf(stderr, "listener: failed to bind socket\n");
-        return 2;
-    }
-
-    freeaddrinfo(servinfo);
-
-    fd_set readfds;
-    struct timeval timeout;
-
-    FD_ZERO(&readfds);
-    FD_SET(sockfd, &readfds);
-
-    // Set timeout to 2 seconds
-    timeout.tv_sec = 2;
-    timeout.tv_usec = 0;
-
-    int ready = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
-    if (ready == -1) {
-        perror("select");
-        return 3;
-    } else if (ready == 0) {
-        printf("Timeout occurred. Exiting...\n");
-        close(sockfd);
-        return 4; // Timeout
-    }
-
-    addr_len = sizeof their_addr;
-    if ((numbytes = recvfrom(sockfd, buf, MAX_BUF_SIZE - 1, 0,
-        (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-            perror("recvfrom");
-            close(sockfd);
-            return 5;
-    }
-
-    printf("listener: got packet from %s\n",
-           inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s));
-    printf("listener: packet is %d bytes long\n", numbytes);
-    buf[numbytes] = '\0';
-    //printf("listener: packet contains \"%s\"\n\n", buf);
-
-    close(sockfd);
-
-    return 0;
-}
-int compare_positions(const void *a, const void *b) {
-    const unsigned char *chunk_a = *(const unsigned char **)a;
-    const unsigned char *chunk_b = *(const unsigned char **)b;
-    uint16_t pos_a = (chunk_a[0] << 8) | chunk_a[1];
-    uint16_t pos_b = (chunk_b[0] << 8) | chunk_b[1];
-    return pos_a - pos_b;
-}
-void rebuild_mp3(unsigned char **chunk_list, int num_chunks) {
-    // Sort the chunk list based on positions
-    qsort(chunk_list, num_chunks, sizeof(unsigned char *), compare_positions);
-    // Rebuild the MP3 file
-    FILE *mp3_file = fopen("reconstructed.mp3", "wb");
-    if (mp3_file == NULL) {
-        perror("Error creating MP3 file");
-        return;
-    }
-
-    for (int i = 0; i < num_chunks; i++) {
-        fwrite(chunk_list[i] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file);
-        printf("Escrevendo chunk:  %d\n",i);
-    }
-
-    fclose(mp3_file);
-}
 int main() {
     int sock_fd;
     struct sockaddr_in servaddr;
@@ -266,23 +149,8 @@ int main() {
     }
     printf("%s\n", body);
 
-    int num_chunks = 1;
-    unsigned char **chunk_list;
-    // Allocate memory for the array of pointers to chunks
-    chunk_list = (unsigned char **)malloc(MAX_CHUNKS * sizeof(unsigned char *));
-
-    // Allocate memory for each chunk
-    for (int i = 0; i < MAX_CHUNKS; i++) {
-        chunk_list[i] = (unsigned char *)malloc((CHUNK_SIZE + 4) * sizeof(unsigned char)); // 4 extra bytes for metadata
-    }
-
-    while(receive_from_server(serverConfig,chunk_list[num_chunks]) != 4){
-        printf("%d\n",num_chunks);
-        num_chunks++;
-    }
-    rebuild_mp3(chunk_list,num_chunks);
     // Executa lógica do cliente
-    do_client_stuff(sock_fd);
+    do_client_stuff(sock_fd, serverConfig);
     
     // Fechando o socket e saindo
     printf("Closing connection.\n");

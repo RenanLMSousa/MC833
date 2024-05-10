@@ -72,7 +72,7 @@ struct _header read_message(char * _message, char * body) {
     return extract_header(strHeader);
 }
 
-void do_server_stuff(int new_fd){
+void do_server_stuff(int new_fd, configuration serverConfig){
     ssize_t n;
     char buf[MAXLINE];
     int error;
@@ -130,7 +130,7 @@ again:
                 }
                 break;
             case DOWNLOAD_SONG:
-                // TODO: Função para fazer o download em si
+                download_song(body, serverConfig);
                 break;
             default:
                 return;
@@ -142,93 +142,6 @@ again:
         goto again;
     else if (n < 0)
         perror("str_echo: read error");
-}
-
-void *get_in_addr(struct sockaddr *sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
-int send_to_client(configuration serverConfig, char *message) {
-    int sockfd;
-    struct addrinfo hints, *servinfo, *p;
-    int rv;
-    int numbytes;
-    char strPort[100] = "";
-
-    strcpy(strPort, serverConfig.port);
-    strPort[strcspn(strPort, "\n")] = 0;
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    if ((rv = getaddrinfo(serverConfig.ip, strPort, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
-
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue;
-        }
-        
-        break;
-    }
-
-    if (p == NULL) {
-        fprintf(stderr, "talker: failed to create socket\n");
-        return 2;
-    }
-
-    if ((numbytes = sendto(sockfd, message, CHUNK_SIZE+4, 0, p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1);
-    }
-
-    freeaddrinfo(servinfo);
-
-    //printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
-    close(sockfd);
-    return 0;
-}
-int break_mp3(const char *file_path, unsigned char **chunk_list) {
-    FILE *mp3_file = fopen(file_path, "rb");
-    if (mp3_file == NULL) {
-        perror("Error opening file");
-        return 0;
-    }
-
-    size_t bytes_read;
-    int num_chunks = 0;
-
-    // Read the file contents in chunks of CHUNK_SIZE bytes
-    while ((bytes_read = fread(chunk_list[num_chunks] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file)) > 0) {
-        // Store metadata in the first four bytes of the chunk
-        uint16_t position = num_chunks; // Assuming num_chunks won't exceed 65535
-        uint32_t read_bytes = bytes_read; // Assuming bytes_read won't exceed 4294967295
-        chunk_list[num_chunks][0] = (position >> 8) & 0xFF; // Store the first byte of position
-        chunk_list[num_chunks][1] = position & 0xFF;        // Store the second byte of position
-        chunk_list[num_chunks][2] = (read_bytes >> 8) & 0xFF; // Store the first byte of read_bytes
-        chunk_list[num_chunks][3] = read_bytes & 0xFF;        // Store the second byte of read_bytes
-
-        num_chunks++;
-
-        // Break the loop if we reach the maximum number of chunks
-        if (num_chunks >= MAX_CHUNKS) {
-            printf("Music will be incomplete, size is larger than %d kb\n",(MAX_CHUNKS*CHUNK_SIZE)/1000);
-            break;
-        }
-    }
-
-    fclose(mp3_file);
-
-    return num_chunks;
 }
 
 int main() {
@@ -270,34 +183,11 @@ int main() {
         }
         printf("Connection established.\n");
 
-
-
-    //INICIO:  FAZ UPLOAD
-    unsigned char **chunk_list;
-    int num_chunks;
-    // Allocate memory for the array of pointers to chunks
-    chunk_list = (unsigned char **)malloc(MAX_CHUNKS * sizeof(unsigned char *));
-
-    // Allocate memory for each chunk
-    for (int i = 0; i < MAX_CHUNKS; i++) {
-        chunk_list[i] = (unsigned char *)malloc((CHUNK_SIZE + 4) * sizeof(unsigned char)); // 4 extra bytes for metadata
-    }
-    // Break the MP3 file into chunks
-    num_chunks = break_mp3("../../your_file.mp3", chunk_list);
-    printf("Number of chunks: %d\n",num_chunks);
-
-    for(int i = 0; i < num_chunks; i++){
-        usleep(1000);
-        send_to_client(serverConfig, chunk_list[i]);
-    }
-
-    //FIM: FAZ UPLOAD
-
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
             close(sock_fd); /* fechar o socket de escuta */
             // Processar a solicitação
-            do_server_stuff(new_fd);
+            do_server_stuff(new_fd, serverConfig);
 
             exit(0);
         }
