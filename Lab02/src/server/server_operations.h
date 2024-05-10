@@ -26,4 +26,6 @@ int list_songs_by_type(char * body, char * output);
 // Lista todas as informações de todas as músicas, retorna o número de músicas
 int list_all_songs_info(char * output);
 
+void download_song(char * body, char * ip, char * port);
+
 #endif /* SERVER_OPERATIONS_H */

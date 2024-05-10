@@ -27,6 +27,6 @@ void list_songs_by_type(int sock_fd, char * type);
 void list_all_songs_info(int sock_fd);
 
 // Baixa uma música dado um identificador
-void download_song(int sock_fd, int identifier);
+void download_song(int sockf_fd, int identifier, char * port);
 
 #endif /* CLIENT_OPERATIONS_H */

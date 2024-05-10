@@ -11,6 +11,8 @@
 #define MAXLINE 10000
 #define MAX_HEADER_SIZE 1000
 #define MAX_BODY_SIZE 30000
+#define CHUNK_SIZE 500
+#define MAX_CHUNKS 10000
 
 // Envia todos os bytes do buffer
 int send_all(int s, char *buf, int len);

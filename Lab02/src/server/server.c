@@ -72,7 +72,7 @@ struct _header read_message(char * _message, char * body) {
     return extract_header(strHeader);
 }
 
-void do_server_stuff(int new_fd){
+void do_server_stuff(int new_fd, char * ip, char * port){
     ssize_t n;
     char buf[MAXLINE];
     int error;
@@ -130,7 +130,7 @@ again:
                 }
                 break;
             case DOWNLOAD_SONG:
-                // TODO: Função para fazer o download em si
+                download_song(body, ip, port);
                 break;
             default:
                 return;
@@ -144,59 +144,51 @@ again:
         perror("str_echo: read error");
 }
 
-void *get_in_addr(struct sockaddr *sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
+// int send_to_client(configuration serverConfig, char *message) {
+//     int sockfd;
+//     struct addrinfo hints, *servinfo, *p;
+//     int rv;
+//     int numbytes;
+//     char strPort[100] = "";
 
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
+//     strcpy(strPort, serverConfig.port);
+//     strPort[strcspn(strPort, "\n")] = 0;
 
-int send_to_client(configuration serverConfig, char *message) {
-    int sockfd;
-    struct addrinfo hints, *servinfo, *p;
-    int rv;
-    int numbytes;
-    char strPort[100] = "";
+//     memset(&hints, 0, sizeof hints);
+//     hints.ai_family = AF_INET;
+//     hints.ai_socktype = SOCK_DGRAM;
 
-    strcpy(strPort, serverConfig.port);
-    strPort[strcspn(strPort, "\n")] = 0;
+//     if ((rv = getaddrinfo(serverConfig.ip, strPort, &hints, &servinfo)) != 0) {
+//         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+//         return 1;
+//     }
 
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    if ((rv = getaddrinfo(serverConfig.ip, strPort, &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
-
-    // loop through all the results and make a socket
-    for(p = servinfo; p != NULL; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-            perror("talker: socket");
-            continue;
-        }
+//     // loop through all the results and make a socket
+//     for(p = servinfo; p != NULL; p = p->ai_next) {
+//         if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+//             perror("talker: socket");
+//             continue;
+//         }
         
-        break;
-    }
+//         break;
+//     }
 
-    if (p == NULL) {
-        fprintf(stderr, "talker: failed to create socket\n");
-        return 2;
-    }
+//     if (p == NULL) {
+//         fprintf(stderr, "talker: failed to create socket\n");
+//         return 2;
+//     }
 
-    if ((numbytes = sendto(sockfd, message, strlen(message), 0, p->ai_addr, p->ai_addrlen)) == -1) {
-        perror("talker: sendto");
-        exit(1);
-    }
+//     if ((numbytes = sendto(sockfd, message, strlen(message), 0, p->ai_addr, p->ai_addrlen)) == -1) {
+//         perror("talker: sendto");
+//         exit(1);
+//     }
 
-    freeaddrinfo(servinfo);
+//     freeaddrinfo(servinfo);
 
-    printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
-    close(sockfd);
-    return 0;
-}
+//     printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
+//     close(sockfd);
+//     return 0;
+// }
 
 
 int main() {
@@ -238,14 +230,14 @@ int main() {
         }
         printf("Connection established.\n");
 
-        usleep(1000);
-        send_to_client(serverConfig, "Teste abc1");
+        // usleep(1000);
+        // send_to_client(serverConfig, "Teste abc1");
 
         // Criação de um processo filho para tratar a conexão
         if ((childpid = fork()) == 0) { /* processo filho */
             close(sock_fd); /* fechar o socket de escuta */
             // Processar a solicitação
-            do_server_stuff(new_fd);
+            do_server_stuff(new_fd, serverConfig.ip, serverConfig.port);
 
             exit(0);
         }
