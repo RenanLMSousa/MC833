@@ -111,7 +111,7 @@ void set_size(char *str, int size) {
 }
 
 // Monta a mensagem
-void build_message(char * message , int operation, int role){
+void build_message(char * message , int operation) {
     char strOut[MAX_HEADER_SIZE + MAX_BODY_SIZE] = "", strMessage[MAX_BODY_SIZE] = "";
 
     // Copia a mensagem para um buffer temporário
@@ -119,7 +119,7 @@ void build_message(char * message , int operation, int role){
     strcat(strMessage,"\n");
 
     // Calcula o tamanho da mensagem
-    sprintf(strOut, "#HEADER\nSize=000000\nRole=%d\nOperation=%d\n#BODY\n", role, operation);
+    sprintf(strOut, "#HEADER\nSize=000000\nOperation=%d\n#BODY\n", operation);
     strcat(strOut, strMessage);
     int size = strlen(strOut) * sizeof(char);
     set_size(strOut, size);

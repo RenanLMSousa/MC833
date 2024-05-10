@@ -21,12 +21,12 @@
 #define MAX_BODY_SIZE 30000
 
 // Lista todas as músicas de um certo tipo
-void list_songs_by_type(int sock_fd, char * type, int role);
+void list_songs_by_type(int sock_fd, char * type);
 
 // Lista todas as informações de todas as músicas
-void list_all_songs_info(int sock_fd, int role);
+void list_all_songs_info(int sock_fd);
 
 // Baixa uma música dado um identificador
-void download_song(int sock_fd, int identifier, int role);
+void download_song(int sock_fd, int identifier);
 
 #endif /* CLIENT_OPERATIONS_H */

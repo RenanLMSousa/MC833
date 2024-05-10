@@ -28,6 +28,6 @@ int remove_header(char *message, char *body);
 void set_size(char *str, int size);
 
 // Monta a mensagem
-void build_message(char * message , int operation, int role);
+void build_message(char * message , int operation);
 
 #endif /* UTILS_H */

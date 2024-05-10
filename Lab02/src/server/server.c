@@ -22,7 +22,6 @@
 struct _header {
     int operation;
     int size;
-    int role;
 };
 
 struct _header extract_header(char * strHeader){
@@ -32,11 +31,6 @@ struct _header extract_header(char * strHeader){
     char *token = strtok(strHeader, "=");
     token = strtok(NULL, "\n");
     header.size = atoi(token);
-
-    // Role
-    token = strtok(NULL, "=");
-    token = strtok(NULL, "\n");
-    header.role = atoi(token);
 
     // Operação
     token = strtok(NULL, "=");
@@ -89,7 +83,7 @@ again:
         char body[MAX_BODY_SIZE];
         char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
         struct _header header = read_message(buf,body);
-        int operation = header.operation, role = header.role, counter;
+        int operation = header.operation, counter;
         
         // Garantir que o buffer está limpo
         memset(strMusic, 0, sizeof(strMusic));
@@ -100,7 +94,7 @@ again:
                 if (counter == 0) {
                     // Lida com erro de música não encontrada
                     char err_msg[] = "No songs found.\n";
-                    build_message(err_msg, -1, 2);
+                    build_message(err_msg, -1);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -108,7 +102,7 @@ again:
                 }
                 else {
                     // Operação concluída
-                    build_message(strMusic, -1, 2);
+                    build_message(strMusic, -1);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -120,7 +114,7 @@ again:
                 if (counter == 0) {
                     // Lida com erro de lista de músicas vazia
                     char err_msg[] = "No songs to list.\n";
-                    build_message(err_msg, -1, 2);
+                    build_message(err_msg, -1);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -128,7 +122,7 @@ again:
                 }
                 else {
                     // Operação concluída
-                    build_message(strMusic, -1, 2);
+                    build_message(strMusic, -1);
                     if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
                         perror("str_echo: send error");
                         return;
@@ -237,7 +231,7 @@ int main() {
 
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.\n";
-        build_message(conf_message, -1, 2);
+        build_message(conf_message, -1);
         if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
             perror("str_echo: send error");
             exit(0);

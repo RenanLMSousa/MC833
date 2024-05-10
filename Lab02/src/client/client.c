@@ -16,35 +16,6 @@
 #define LISTENQ 20
 #define MAX_BUF_SIZE 3000
 
-// Pergunta se o usuário quer rodar como administrador e retorna o resultado
-int run_admin() {
-    char choice[20];
-    printf("Do you want to execute as admin? (yes/no): ");
-    fgets(choice, sizeof(choice), stdin);
-
-    // Remove caracter de nova linha se houver um
-    choice[strcspn(choice, "\n")] = '\0';
-
-    // Garante que o input funciona em caixa alta ou não
-    for (int i = 0; choice[i]; i++) {
-        choice[i] = tolower(choice[i]);
-    }
-
-    if (strcmp(choice, "yes") == 0 || strcmp(choice, "y") == 0) {
-        printf("Executing as admin\n\n");
-        return 1;
-    } 
-    else if (strcmp(choice, "no") == 0 || strcmp(choice, "n") == 0) {
-        printf("Executing as regular user\n\n");
-        return 0;
-    } 
-    else {
-        // Retorna -1 para continuar perguntando
-        printf("Invalid input. Please enter 'yes' or 'no'.\n");
-        return -1;
-    }
-}
-
 // Imprime menu de funções para guiar o usuário
 void print_menu() {
     printf("Choose your operation by entering one of the following numbers: \n");
@@ -88,13 +59,8 @@ int read_int(int isId) {
 // Faz a lógica da interação entre cliente e servidor
 void do_client_stuff(int sock_fd) {
     // Executando a lógica do cliente
-    int role = -1, operation;
+    int operation;
     char sendline[MAXLINE], buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
-    
-    // Garante que o usuário escolha entre ser ou não admin
-    while (role == -1) {
-        role = run_admin();
-    }
     
     while(true) {
 
@@ -111,15 +77,15 @@ void do_client_stuff(int sock_fd) {
 
                 printf("Enter music type: ");
                 fgets(music_type, sizeof(music_type), stdin);
-                list_songs_by_type(sock_fd, music_type, role);
+                list_songs_by_type(sock_fd, music_type);
                 break;
                 }
             case LIST_ALL_SONGS_INFO:
-                list_all_songs_info(sock_fd, role);
+                list_all_songs_info(sock_fd);
                 break;
             case DOWNLOAD_SONG: {
                 int identifier = read_int(1);
-                download_song(sock_fd, identifier, role);
+                download_song(sock_fd, identifier);
                 break;
                 }
             default:
