@@ -1,0 +1,308 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
+#include "../music/music.h"
+#include "../external_files/storage_handler.h"
+#include "../external_files/config_handler.h"
+#include "../utils/utils.h"
+#include "server_operations.h"
+
+#define SA struct sockaddr
+#define LISTENQ 20
+
+// Estrutura privada para guardar informações do cabeçalho
+struct _header {
+    int operation;
+    int size;
+};
+
+struct _header extract_header(char * strHeader){
+    struct _header header;
+
+    // Tamanho
+    char *token = strtok(strHeader, "=");
+    token = strtok(NULL, "\n");
+    header.size = atoi(token);
+
+    // Operação
+    token = strtok(NULL, "=");
+    token = strtok(NULL, "\n");
+    header.operation = atoi(token);
+
+    return header;
+}
+
+// Separa header de body, preenchendo o vetor body e retornando a estrutura header
+struct _header read_message(char * _message, char * body) {
+    // Variáveis para armazenar o conteúdo do #HEADER e #BODY
+    char strHeader[MAX_HEADER_SIZE] = "";
+    char strBody[MAX_BODY_SIZE] = "";
+
+    // Variável para controlar se estamos lendo o cabeçalho ou o corpo
+    int readingBody = 0;
+
+    // Separando o conteúdo
+    char *token = strtok(_message, "\n");
+    while (token != NULL) {
+        if (strcmp(token, "#BODY") == 0) {
+            readingBody = 1;
+        } else if (strcmp(token, "#HEADER") == 0) {
+            readingBody = 0;
+        } else {
+            if (readingBody) {
+                strcat(strBody, token);
+                strcat(strBody, "\n");
+            } else {
+                strcat(strHeader, token);
+                strcat(strHeader, "\n");
+            }
+        }
+        token = strtok(NULL, "\n");
+    }
+
+    strcpy(body,strBody);
+    return extract_header(strHeader);
+}
+
+void do_server_stuff(int new_fd){
+    ssize_t n;
+    char buf[MAXLINE];
+    int error;
+
+again:
+    memset(buf, 0, sizeof(buf));
+    while ((n = recv_all(new_fd, buf)) > 0) {
+        char body[MAX_BODY_SIZE];
+        char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
+        struct _header header = read_message(buf,body);
+        int operation = header.operation, counter;
+        
+        // Garantir que o buffer está limpo
+        memset(strMusic, 0, sizeof(strMusic));
+        switch (operation)
+            {
+            case LIST_SONGS_BY_TYPE:
+                counter = list_songs_by_type(body, strMusic);
+                if (counter == 0) {
+                    // Lida com erro de música não encontrada
+                    char err_msg[] = "No songs found.\n";
+                    build_message(err_msg, -1);
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
+                else {
+                    // Operação concluída
+                    build_message(strMusic, -1);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
+                break;
+            case LIST_ALL_SONGS_INFO:
+                counter = list_all_songs_info(strMusic);
+                if (counter == 0) {
+                    // Lida com erro de lista de músicas vazia
+                    char err_msg[] = "No songs to list.\n";
+                    build_message(err_msg, -1);
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
+                else {
+                    // Operação concluída
+                    build_message(strMusic, -1);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
+                break;
+            case DOWNLOAD_SONG:
+                // TODO: Função para fazer o download em si
+                break;
+            default:
+                return;
+        }
+        memset(buf, 0, sizeof(buf));
+    }
+
+    if (n < 0 && errno == EINTR)
+        goto again;
+    else if (n < 0)
+        perror("str_echo: read error");
+}
+
+void *get_in_addr(struct sockaddr *sa) {
+    if (sa->sa_family == AF_INET) {
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+int send_to_client(configuration serverConfig, char *message) {
+    int sockfd;
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
+    int numbytes;
+    char strPort[100] = "";
+
+    strcpy(strPort, serverConfig.port);
+    strPort[strcspn(strPort, "\n")] = 0;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    if ((rv = getaddrinfo(serverConfig.ip, strPort, &hints, &servinfo)) != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1;
+    }
+
+    // loop through all the results and make a socket
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue;
+        }
+        
+        break;
+    }
+
+    if (p == NULL) {
+        fprintf(stderr, "talker: failed to create socket\n");
+        return 2;
+    }
+
+    if ((numbytes = sendto(sockfd, message, CHUNK_SIZE+4, 0, p->ai_addr, p->ai_addrlen)) == -1) {
+        perror("talker: sendto");
+        exit(1);
+    }
+
+    freeaddrinfo(servinfo);
+
+    //printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
+    close(sockfd);
+    return 0;
+}
+int break_mp3(const char *file_path, unsigned char **chunk_list) {
+    FILE *mp3_file = fopen(file_path, "rb");
+    if (mp3_file == NULL) {
+        perror("Error opening file");
+        return 0;
+    }
+
+    size_t bytes_read;
+    int num_chunks = 0;
+
+    // Read the file contents in chunks of CHUNK_SIZE bytes
+    while ((bytes_read = fread(chunk_list[num_chunks] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file)) > 0) {
+        // Store metadata in the first four bytes of the chunk
+        uint16_t position = num_chunks; // Assuming num_chunks won't exceed 65535
+        uint32_t read_bytes = bytes_read; // Assuming bytes_read won't exceed 4294967295
+        chunk_list[num_chunks][0] = (position >> 8) & 0xFF; // Store the first byte of position
+        chunk_list[num_chunks][1] = position & 0xFF;        // Store the second byte of position
+        chunk_list[num_chunks][2] = (read_bytes >> 8) & 0xFF; // Store the first byte of read_bytes
+        chunk_list[num_chunks][3] = read_bytes & 0xFF;        // Store the second byte of read_bytes
+
+        num_chunks++;
+
+        // Break the loop if we reach the maximum number of chunks
+        if (num_chunks >= MAX_CHUNKS) {
+            printf("Music will be incomplete, size is larger than %d kb\n",(MAX_CHUNKS*CHUNK_SIZE)/1000);
+            break;
+        }
+    }
+
+    fclose(mp3_file);
+
+    return num_chunks;
+}
+
+int main() {
+    configuration serverConfig;
+    printf("Reading configs\n");
+    serverConfig =  read_configuration("../../server.config");
+    printf("Initializing server, hearing on PORT: %s\n",serverConfig.port);
+
+    int sock_fd, new_fd;
+    pid_t childpid;
+    socklen_t clilen;
+    struct sockaddr_in cliaddr, servaddr;
+    // Criação do socket
+    sock_fd = socket(PF_INET, SOCK_STREAM, 0);
+
+    // Configuração do endereço do servidor
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(atoi(serverConfig.port));
+    
+    // Associação do socket ao endereço do servidor
+    bind(sock_fd, (SA *) &servaddr, sizeof(servaddr));
+    // Definição do socket para escutar conexões
+    listen(sock_fd, LISTENQ);
+
+    for (;;) {
+        clilen = sizeof(cliaddr);
+
+        // Aceitar conexões entrantes
+        new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
+
+        // Envio de mensagem para confirmar conexão com cliente
+        char conf_message[] = "Connection established.\n";
+        build_message(conf_message, -1);
+        if (send_all(new_fd, conf_message, strlen(conf_message)) < 0) {
+            perror("str_echo: send error");
+            exit(0);
+        }
+        printf("Connection established.\n");
+
+
+
+    //INICIO:  FAZ UPLOAD
+    unsigned char **chunk_list;
+    int num_chunks;
+    // Allocate memory for the array of pointers to chunks
+    chunk_list = (unsigned char **)malloc(MAX_CHUNKS * sizeof(unsigned char *));
+
+    // Allocate memory for each chunk
+    for (int i = 0; i < MAX_CHUNKS; i++) {
+        chunk_list[i] = (unsigned char *)malloc((CHUNK_SIZE + 4) * sizeof(unsigned char)); // 4 extra bytes for metadata
+    }
+    // Break the MP3 file into chunks
+    num_chunks = break_mp3("../../your_file.mp3", chunk_list);
+    printf("Number of chunks: %d\n",num_chunks);
+
+    for(int i = 0; i < num_chunks; i++){
+        usleep(1000);
+        send_to_client(serverConfig, chunk_list[i]);
+    }
+
+    //FIM: FAZ UPLOAD
+
+        // Criação de um processo filho para tratar a conexão
+        if ((childpid = fork()) == 0) { /* processo filho */
+            close(sock_fd); /* fechar o socket de escuta */
+            // Processar a solicitação
+            do_server_stuff(new_fd);
+
+            exit(0);
+        }
+        // Pai fecha o socket conectado
+        close(new_fd);
+    }
+    return 0;
+}
