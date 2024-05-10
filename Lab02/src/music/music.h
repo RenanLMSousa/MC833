@@ -20,6 +20,9 @@ struct music {
 // Imprime os campos da estrutura music
 void print_music_details(struct music my_music);
 
+// Adiciona no fim da string buffer uma string chave e um valor inteiro
+void append_int(char * buffer, char * key, int value);
+
 // Adiciona ao buffer os campos identifier, title e performer de uma música
 void music_to_string_reduced(struct music my_music, char * buffer);
 

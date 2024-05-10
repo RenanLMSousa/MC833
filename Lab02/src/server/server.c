@@ -90,148 +90,16 @@ again:
         char strMusic[MAX_HEADER_SIZE + MAX_BODY_SIZE];
         struct _header header = read_message(buf,body);
         int operation = header.operation, role = header.role, counter;
+        
         // Garantir que o buffer está limpo
         memset(strMusic, 0, sizeof(strMusic));
         switch (operation)
             {
-            case REGISTER_SONG:       
-                // Verifica se o usuário é admin     
-                if (role == 1) {
-                    error = register_song(body);
-                    // Lida com erro de id já utilizado
-                    if (error == 1) {
-                        char err_msg[] = "This id is already in use.\n";
-                        build_message(err_msg, -1, 2);
-                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                            perror("str_echo: send error");
-                            return;
-                        }
-                    }
-                    // Lida com erro de limite de músicas
-                    else if (error == 2) {
-                        char err_msg[] = "You have reached the limit number of songs.\n";
-                        build_message(err_msg, -1, 2);
-                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                            perror("str_echo: send error");
-                            return;
-                        }
-                    }
-                    // Operação concluída
-                    else {
-                        char msg[] = "Song registered.\n";
-                        build_message(msg, -1, 2);
-                        if (send_all(new_fd, msg, strlen(msg)) < 0) {
-                            perror("str_echo: send error");
-                            return;
-                        }
-                    }
-                }
-                else {
-                    char err_msg[] = "This operation is not available to regular users.\n";
-                    build_message(err_msg, -1, 2);
-                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                break;
-            case REMOVE_SONG:
-                // Verifica se o usuário é admin  
-                if (role == 1) {
-                    error = remove_song(body);
-                    if (error == 1) {
-                        // Lida com erro de música não encontrada
-                        char err_msg[] = "Song not found.\n";
-                        build_message(err_msg, -1, 2);
-                        if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                            perror("str_echo: send error");
-                            return;
-                        }
-                    }
-                    else {
-                        // Operação concluída
-                        char msg[] = "Song deleted.\n";
-                        build_message(msg, -1, 2);
-                        if (send_all(new_fd, msg, strlen(msg)) < 0) {
-                            perror("str_echo: send error");
-                            return;
-                        }
-                    }
-                }
-                else {
-                    char err_msg[] = "This operation is not available to regular users.\n";
-                    build_message(err_msg, -1, 2);
-                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                break;
-            case LIST_SONGS_BY_YEAR:
-                counter = list_songs_by_year(body, strMusic);
-                if (counter == 0) {
-                    // Lida com erro de música não encontrada
-                    char err_msg[] = "No songs found.\n";
-                    build_message(err_msg, -1, 2);
-                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                else { 
-                    // Operação concluída
-                    build_message(strMusic, -1, 2);
-                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                break;
-            case LIST_SONGS_BY_LANGUAGE_AND_YEAR:
-                counter = list_songs_by_language_and_year(body, strMusic);
-                if (counter == 0) {
-                    // Lida com erro de música não encontrada
-                    char err_msg[] = "No songs found.\n";
-                    build_message(err_msg, -1, 2);
-                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                else {
-                    // Operação concluída
-                    build_message(strMusic, -1, 2);
-                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                break;
             case LIST_SONGS_BY_TYPE:
                 counter = list_songs_by_type(body, strMusic);
                 if (counter == 0) {
                     // Lida com erro de música não encontrada
                     char err_msg[] = "No songs found.\n";
-                    build_message(err_msg, -1, 2);
-                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                else {
-                    // Operação concluída
-                    build_message(strMusic, -1, 2);
-                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
-                        perror("str_echo: send error");
-                        return;
-                    }
-                }
-                break;
-            case LIST_SONG_INFO_BY_ID:
-                error = list_song_info_by_id(body, strMusic);
-                if (error == 1) {
-                    // Lida com erro de música não encontrada
-                    char err_msg[] = "Song not found.\n";
                     build_message(err_msg, -1, 2);
                     if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
                         perror("str_echo: send error");
@@ -266,6 +134,9 @@ again:
                         return;
                     }
                 }
+                break;
+            case DOWNLOAD_SONG:
+                // TODO: Função para fazer o download em si
                 break;
             default:
                 return;
@@ -328,7 +199,7 @@ int send_to_client(configuration serverConfig, char *message) {
 
     freeaddrinfo(servinfo);
 
-    printf("talker: sent %d bytes to %s\n", numbytes, serverConfig.ip);
+    printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
     close(sockfd);
     return 0;
 }

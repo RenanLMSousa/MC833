@@ -48,13 +48,9 @@ int run_admin() {
 // Imprime menu de funções para guiar o usuário
 void print_menu() {
     printf("Choose your operation by entering one of the following numbers: \n");
-    printf("1 - Register a new song (only admin).\n");
-    printf("2 - Remove a song (only admin).\n");
-    printf("3 - List all songs released in a specific year.\n");
-    printf("4 - List all songs of a specific language released in a specific year.\n");
-    printf("5 - List all songs of a specific type.\n");
-    printf("6 - List all informations of a specific song.\n");
-    printf("7 - List all informations of all songs.\n");
+    printf("1 - List all songs of a specific type.\n");
+    printf("2 - List all informations of all songs.\n");
+    printf("3 - Download a song\n");
     printf("0 - Close the application.\n");
 }
 
@@ -110,62 +106,6 @@ void do_client_stuff(int sock_fd) {
         switch (operation)
             // Executa a operação de acordo com o código
             {
-            case REGISTER_SONG: {
-                struct music my_music;
-                my_music.identifier = read_int(1);
-                
-                printf("Enter title: \n");
-                fgets(my_music.title, sizeof(my_music.title), stdin);
-                my_music.title[strcspn(my_music.title, "\n")] = '\0'; // Remover a quebra de linha
-
-                printf("Enter performer: \n");
-                fgets(my_music.performer, sizeof(my_music.performer), stdin);
-                my_music.performer[strcspn(my_music.performer, "\n")] = '\0';
-
-                printf("Enter language: \n");
-                fgets(my_music.language, sizeof(my_music.language), stdin);
-                my_music.language[strcspn(my_music.language, "\n")] = '\0';
-
-                printf("Enter music type: \n");
-                fgets(my_music.music_type, sizeof(my_music.music_type), stdin);
-                my_music.music_type[strcspn(my_music.music_type, "\n")] = '\0';
-
-                printf("Enter chorus: \n");
-                fgets(my_music.chorus, sizeof(my_music.chorus), stdin);
-                my_music.chorus[strcspn(my_music.chorus, "\n")] = '\0';
-
-                my_music.release_year = read_int(0);
-
-                register_song(sock_fd, my_music, role);
-                break;
-            }
-            case REMOVE_SONG: {
-                int identifier = read_int(1);
-                remove_song(sock_fd, identifier, role);
-                break;
-                }
-            case LIST_SONGS_BY_YEAR: {
-                char buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
-                int year;
-
-                printf("Enter year: ");
-                fgets(buffer, sizeof(buffer), stdin);
-                year = atoi(buffer);
-                list_songs_by_year(sock_fd, year, role);
-                break;
-                }
-            case LIST_SONGS_BY_LANGUAGE_AND_YEAR: {
-                char language[LANGUAGE_LENGTH], buffer[MAX_BODY_SIZE + MAX_HEADER_SIZE];
-                int year;
-
-                printf("Enter language: ");
-                fgets(language, sizeof(language), stdin);
-                printf("Enter year: ");
-                fgets(buffer, sizeof(buffer), stdin);
-                year = atoi(buffer);
-                list_songs_by_language_and_year(sock_fd, language, year, role);
-                break;
-                }
             case LIST_SONGS_BY_TYPE: {
                 char music_type[MUSIC_TYPE_LENGTH];
 
@@ -174,16 +114,16 @@ void do_client_stuff(int sock_fd) {
                 list_songs_by_type(sock_fd, music_type, role);
                 break;
                 }
-            case LIST_SONG_INFO_BY_ID: {
-                int identifier = read_int(1);
-                list_song_info_by_id(sock_fd, identifier, role);
-                break;
-                }
             case LIST_ALL_SONGS_INFO:
                 list_all_songs_info(sock_fd, role);
                 break;
+            case DOWNLOAD_SONG: {
+                int identifier = read_int(1);
+                download_song(sock_fd, identifier, role);
+                break;
+                }
             default:
-                // Operação para encerrrar a execução
+                // Operação para encerrar a execução
                 return;
         }
 
@@ -273,7 +213,7 @@ int receive_from_server(configuration serverConfig) {
         inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s));
     printf("listener: packet is %d bytes long\n", numbytes);
     buf[numbytes] = '\0';
-    printf("listener: packet contains \"%s\"\n", buf);
+    printf("listener: packet contains \"%s\"\n\n", buf);
 
     close(sockfd);
 
