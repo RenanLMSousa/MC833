@@ -52,7 +52,6 @@ int receive_from_server(configuration serverConfig, unsigned char * out) {
     struct sockaddr_storage their_addr;
     char * buf = out;
     socklen_t addr_len;
-    char s[INET_ADDRSTRLEN];
     char strPort[100] = "";
 
     strcpy(strPort, serverConfig.port);
@@ -118,12 +117,7 @@ int receive_from_server(configuration serverConfig, unsigned char * out) {
             return 5;
     }
 
-    printf("listener: got packet from %s\n",
-           inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s));
-    printf("listener: packet is %d bytes long\n", numbytes);
     buf[numbytes] = '\0';
-    //printf("listener: packet contains \"%s\"\n\n", buf);
-
     close(sockfd);
 
     return 0;
@@ -154,10 +148,11 @@ void rebuild_mp3(unsigned char **chunk_list, int num_chunks, int identifier) {
         return;
     }
 
-    for (int i = 0; i < num_chunks; i++) {
+    int i;
+    for (i = 0; i < num_chunks; i++) {
         fwrite(chunk_list[i] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file);
-        printf("Escrevendo chunk:  %d\n",i);
     }
+    printf("Download ended. %d chunks writen to %s\n", i, filepath);
 
     fclose(mp3_file);
 }
@@ -173,6 +168,7 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
         return;
     }
 
+    printf("Download started, please wait.\n");
     int num_chunks = 1;
     unsigned char **chunk_list;
     // Aloca memória para o array de ponteiros de chunks
@@ -184,8 +180,8 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
     }
 
     while(receive_from_server(serverConfig,chunk_list[num_chunks]) != 4){
-        printf("%d\n",num_chunks);
         num_chunks++;
     }
+    printf("%d chunks received\n", num_chunks);
     rebuild_mp3(chunk_list, num_chunks, identifier);
 }
