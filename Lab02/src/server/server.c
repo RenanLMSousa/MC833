@@ -130,7 +130,24 @@ again:
                 }
                 break;
             case DOWNLOAD_SONG:
-                download_song(body, serverConfig);
+                error = download_song(body, serverConfig);
+                if (error == 1) {
+                    char err_msg[] = "File not found.\n";
+                    build_message(err_msg, -1);
+                    if (send_all(new_fd, err_msg, strlen(err_msg)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
+                // Operação concluída
+                else {
+                    char confirm_message[] = "Operation concluded successfuly.\n";
+                    build_message(confirm_message, -1);
+                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                        perror("str_echo: send error");
+                        return;
+                    }
+                }
                 break;
             default:
                 return;

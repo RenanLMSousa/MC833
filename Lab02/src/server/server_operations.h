@@ -27,7 +27,7 @@ int list_songs_by_type(char * body, char * output);
 // Lista todas as informações de todas as músicas, retorna o número de músicas
 int list_all_songs_info(char * output);
 
-// Baixa uma música dado um identificador
-void download_song(char * body, configuration serverConfig);
+// Baixa uma música dado um identificador, retorna 1 se não houver arquivo desse identificador
+int download_song(char * body, configuration serverConfig);
 
 #endif /* SERVER_OPERATIONS_H */

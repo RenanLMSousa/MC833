@@ -124,8 +124,8 @@ int break_mp3(const char *file_path, unsigned char **chunk_list) {
     return num_chunks;
 }
 
-// Baixa uma música dado um identificador
-void download_song(char * body, configuration serverConfig) {
+// Baixa uma música dado um identificador, retorna 1 se não houver arquivo desse identificador
+int download_song(char * body, configuration serverConfig) {
     char *token = strtok(body, "=");
     char identifier[MAX_BODY_SIZE];
 
@@ -150,10 +150,19 @@ void download_song(char * body, configuration serverConfig) {
 
     // Quebra o arquivo mp3 em chunks
     num_chunks = break_mp3(filepath, chunk_list);
+    if (num_chunks == 0) {
+        return 1;
+    }
     printf("Number of chunks: %d\n",num_chunks);
 
     for(int i = 0; i < num_chunks; i++){
         usleep(1000);
         send_to_client(serverConfig, chunk_list[i]);
     }
+
+    // Libera memória alocada
+    for (int i = 0; i < MAX_CHUNKS; i++) {
+        free(chunk_list[i]);
+    }
+    free(chunk_list);
 }

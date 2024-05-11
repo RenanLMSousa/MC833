@@ -104,7 +104,6 @@ int receive_from_server(configuration serverConfig, unsigned char * out) {
         perror("select");
         return 3;
     } else if (ready == 0) {
-        printf("Timeout occurred. Exiting...\n");
         close(sockfd);
         return 4; // Timeout
     }
@@ -152,7 +151,7 @@ void rebuild_mp3(unsigned char **chunk_list, int num_chunks, int identifier) {
     for (i = 0; i < num_chunks; i++) {
         fwrite(chunk_list[i] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file);
     }
-    printf("Download ended. %d chunks writen to %s\n", i, filepath);
+    printf("Download finished. %d chunks writen to %s\n", i - 1, filepath);
 
     fclose(mp3_file);
 }
@@ -168,7 +167,7 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
         return;
     }
 
-    printf("Download started, please wait.\n");
+    printf("\nDownload started, please wait.\n");
     int num_chunks = 1;
     unsigned char **chunk_list;
     // Aloca memória para o array de ponteiros de chunks
@@ -182,6 +181,12 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
     while(receive_from_server(serverConfig,chunk_list[num_chunks]) != 4){
         num_chunks++;
     }
-    printf("%d chunks received\n", num_chunks);
+    printf("%d chunks received\n", num_chunks - 1);
     rebuild_mp3(chunk_list, num_chunks, identifier);
+
+    // Libera memória alocada
+    // for (int i = 0; i < MAX_CHUNKS; i++) {
+    //     free(chunk_list[i]);
+    // }
+    // free(chunk_list);
 }
