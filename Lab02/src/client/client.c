@@ -102,15 +102,12 @@ void do_client_stuff(int sock_fd, configuration serverConfig) {
         else {
             // Remove o cabeçalho e imprime pro cliente o resultado da operação
             char body[MAX_BODY_SIZE] = "";
-            printf("oi2\n");
             int error = remove_header(sendline, body);
-            printf("oi3\n");
             if (error == -1) {
                 printf("Broken message.\n");
             }
             printf("\n%s\n", body);
         }
-        printf("oi4\n");
     }
 }
 

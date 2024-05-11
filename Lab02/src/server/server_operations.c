@@ -151,6 +151,11 @@ int download_song(char * body, configuration serverConfig) {
     // Quebra o arquivo mp3 em chunks
     num_chunks = break_mp3(filepath, chunk_list);
     if (num_chunks == 0) {
+        // Libera memória alocada
+        for (int i = 0; i < MAX_CHUNKS; i++) {
+            free(chunk_list[i]);
+        }
+        free(chunk_list);
         return 1;
     }
     printf("Number of chunks: %d\n",num_chunks);

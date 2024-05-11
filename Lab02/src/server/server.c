@@ -143,7 +143,7 @@ again:
                 else {
                     char confirm_message[] = "Operation concluded successfuly.\n";
                     build_message(confirm_message, -1);
-                    if (send_all(new_fd, strMusic, strlen(strMusic)) < 0) {
+                    if (send_all(new_fd, confirm_message, strlen(confirm_message)) < 0) {
                         perror("str_echo: send error");
                         return;
                     }
