@@ -213,6 +213,7 @@ int main() {
 
             exit(0);
         }
+        
         // Pai fecha o socket conectado
         close(new_fd);
     }

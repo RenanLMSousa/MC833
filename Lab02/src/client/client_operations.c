@@ -96,7 +96,7 @@ int receive_from_server(configuration serverConfig, unsigned char * out) {
     FD_SET(sockfd, &readfds);
 
     // Define timeout para 2 segundos
-    timeout.tv_sec = 2;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
 
     int ready = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
@@ -180,11 +180,25 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
         chunk_list[i] = (unsigned char *)malloc((CHUNK_SIZE + 4) * sizeof(unsigned char)); // 4 extra bytes for metadata
     }
 
+    int error = 0;
     while(receive_from_server(serverConfig,chunk_list[num_chunks]) != 4){
         num_chunks++;
+        if (num_chunks % 300 == 0) {
+            printf("\rDownloading. ");
+            fflush(stdout);
+        } else if (num_chunks % 500 == 0) {
+            printf("\rDownloading.. ");
+            fflush(stdout);
+        } else if (num_chunks % 700 == 0) {
+            printf("\rDownloading...");
+            fflush(stdout);
+        }
     }
-    printf("%d chunks received\n", num_chunks - 1);
-    rebuild_mp3(chunk_list, num_chunks, identifier);
+
+    if (error == 0 || error == 4) {
+        printf("%d chunks received\n", num_chunks - 1);
+        rebuild_mp3(chunk_list, num_chunks, identifier);
+    }
 
     unsigned char *buf;
     // Libera memória alocada

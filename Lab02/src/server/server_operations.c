@@ -161,7 +161,7 @@ int download_song(char * body, configuration serverConfig) {
     printf("Number of chunks: %d\n",num_chunks);
 
     for(int i = 0; i < num_chunks; i++){
-        usleep(1000);
+        usleep(500);
         send_to_client(serverConfig, chunk_list[i]);
     }
 
