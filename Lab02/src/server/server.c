@@ -191,6 +191,11 @@ int main() {
         // Aceitar conexões entrantes
         new_fd = accept(sock_fd, (SA *) &cliaddr, &clilen);
 
+        // Obter IP do cliente
+        char *client_ip = inet_ntoa(cliaddr.sin_addr);
+        printf("Client IP: %s\n", client_ip);
+        strcpy(serverConfig.ip, client_ip);
+
         // Envio de mensagem para confirmar conexão com cliente
         char conf_message[] = "Connection established.\n";
         build_message(conf_message, -1);

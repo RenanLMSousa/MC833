@@ -144,7 +144,7 @@ int download_song(char * body, configuration serverConfig) {
     }
 
     // Obtém o filepath a partir do id
-    char filepath[MAX_BODY_SIZE] = "../../storage/song_files/";
+    char filepath[MAX_BODY_SIZE] = "../../storage/server_songs/";
     strcat(filepath, identifier);
     strcat(filepath, ".mp3");
 

@@ -137,8 +137,10 @@ void rebuild_mp3(unsigned char **chunk_list, int num_chunks, int identifier) {
     qsort(chunk_list, num_chunks, sizeof(unsigned char *), compare_positions);
     
     // Reconstrói o arquivo MP3
-    char filepath[MAX_BODY_SIZE] = "";
-    sprintf(filepath, "%d", identifier);
+    char filepath[MAX_BODY_SIZE] = "../../storage/client_songs/";
+    char temp[100] = "";
+    sprintf(temp, "%d", identifier);
+    strcat(filepath, temp);
     strcat(filepath, ".mp3");
     
     FILE *mp3_file = fopen(filepath, "wb");
