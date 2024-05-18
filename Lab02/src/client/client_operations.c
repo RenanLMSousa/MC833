@@ -199,11 +199,4 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
         printf("%d chunks received\n", num_chunks - 1);
         rebuild_mp3(chunk_list, num_chunks, identifier);
     }
-
-    unsigned char *buf;
-    // Libera memória alocada
-    // for (int i = 0; i < MAX_CHUNKS; i++) {
-    //     free(chunk_list[i]);
-    // }
-    // free(chunk_list);
 }

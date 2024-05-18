@@ -86,10 +86,11 @@ int send_to_client(configuration serverConfig, char *message) {
 
     freeaddrinfo(servinfo);
 
-    //printf("\ntalker: sent %d bytes to %s\n\n", numbytes, serverConfig.ip);
     close(sockfd);
     return 0;
 }
+
+// Quebra o arquivo mp3 em uma lista de chunks
 int break_mp3(const char *file_path, unsigned char **chunk_list) {
     FILE *mp3_file = fopen(file_path, "rb");
     if (mp3_file == NULL) {
