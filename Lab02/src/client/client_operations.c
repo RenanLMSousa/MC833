@@ -183,13 +183,13 @@ void download_song(int sockf_fd, int identifier, configuration serverConfig) {
     int error = 0;
     while(receive_from_server(serverConfig,chunk_list[num_chunks]) != 4){
         num_chunks++;
-        if (num_chunks % 300 == 0) {
+        if (num_chunks % 500 == 0) {
             printf("\rDownloading. ");
             fflush(stdout);
-        } else if (num_chunks % 500 == 0) {
+        } else if (num_chunks % 1200 == 0) {
             printf("\rDownloading.. ");
             fflush(stdout);
-        } else if (num_chunks % 700 == 0) {
+        } else if (num_chunks % 2600 == 0) {
             printf("\rDownloading...");
             fflush(stdout);
         }

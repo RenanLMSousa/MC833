@@ -54,13 +54,14 @@ void rebuild_mp3(unsigned char **chunk_list, int num_chunks) {
 
     // Rebuild the MP3 file
     FILE *mp3_file = fopen("reconstructed.mp3", "wb");
+
     if (mp3_file == NULL) {
         perror("Error creating MP3 file");
         return;
     }
 
     for (int i = 0; i < num_chunks; i++) {
-        fwrite(chunk_list[i] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file);
+         fwrite(chunk_list[i] + 4, sizeof(unsigned char), CHUNK_SIZE, mp3_file);
     }
 
     fclose(mp3_file);
@@ -94,7 +95,7 @@ int main() {
     }
 
     // Break the MP3 file into chunks
-    num_chunks = break_mp3("your_file.mp3", chunk_list);
+    num_chunks = break_mp3("storage/server_songs/1.mp3", chunk_list);
     //O SERVIDOR ENVIA TODAS AS CHUNKS
 
 
