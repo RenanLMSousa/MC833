@@ -36,11 +36,23 @@ def main():
     for idx, p in enumerate(valid):
         print(idx, p[IP].time)
 
-
     tp_1 = bytes_sent_1 / (end_time_1 - start_time_1)
     tp_2 = bytes_sent_2 / (end_time_2 - start_time_2)
     print(f"- Source throughput: {tp_1: .3f} bytes/s")
     print(f"- Destination throughput: {tp_2: .3f} bytes/s")
+
+
+    # Calculates total number of packets
+    print("Total number of packets received:")
+    source_count = 0
+    dest_count = 0
+    for p in valid:
+        if p[IP].dst == source_addr:
+            source_count += 1
+        elif p[IP].dst == dest_addr:
+            dest_count += 1
+    print(f"- Source received: {source_count} packets")
+    print(f"- Destination received: {dest_count} packets")
 
 
 main()
