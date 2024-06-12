@@ -6,8 +6,8 @@ LAST_SRC = -2
 FIRST_DEST = 1
 LAST_DEST = -1
 
-def main():
-    pcap_packets = rdpcap("h1toh3.pcap")
+def pcap_analyze(file_name : str):
+    pcap_packets = rdpcap(file_name)
     
     # Filters packets of other types as they aren't of interest
     filtered_packets = []
@@ -36,14 +36,29 @@ def main():
     start_time_dest = filtered_packets[FIRST_DEST].time 
     end_time_dest = filtered_packets[LAST_DEST].time
 
+    
+    """
+    time_taken = 0
+    for i in range(len(filtered_packets)-1):
+        delta_time = filtered_packets[i+1].time - filtered_packets[i].time
+        time_taken += delta_time
+    print("@@@",time_taken/len(filtered_packets))"""
+
+    time_taken = 0
+    dest_packages = [a for a in filtered_packets if packet[IP].src == dest_addr]
+    for i in range(len(dest_packages) - 1):
+        delta_time = dest_packages[i+1].time - dest_packages[i].time
+        time_taken += delta_time
+    print("@@@",time_taken/len(filtered_packets))
+
+
+
     # Calculates throughput
     print("Throughput:")
-
     tp_src = bytes_sent_src / (end_time_src - start_time_src)
     tp_dest = bytes_sent_dest / (end_time_dest - start_time_dest)
     print(f"- Source throughput: {tp_src: .3f} bytes/s")
     print(f"- Destination throughput: {tp_dest: .3f} bytes/s")
-
 
     # Calculates total number of packets
     print("Total number of packets received:")
@@ -57,5 +72,18 @@ def main():
     print(f"- Source received: {source_count} packets")
     print(f"- Destination received: {dest_count} packets")
 
+def main():
 
+    #H1 TO H3
+    print("-------------------------------------------------")
+    print("H1 to H3, reading from file: h1toh3.pcap")
+    print()
+    pcap_analyze("h1toh3.pcap")
+    print("-------------------------------------------------")
+    #H2 TO H4
+    
+    print("H2 to H4, reading from file: h2toh4.pcap")
+    print()
+    pcap_analyze("h2toh4.pcap")
+    print("-------------------------------------------------")
 main()
