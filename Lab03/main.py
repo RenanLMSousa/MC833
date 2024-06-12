@@ -1,55 +1,58 @@
 from scapy.all import rdpcap, IP
 
+FIRST_SRC = 0
+LAST_SRC = -2
+
+FIRST_DEST = 1
+LAST_DEST = -1
+
 def main():
-    pcap = rdpcap("h1toh3.pcap")
+    pcap_packets = rdpcap("h1toh3.pcap")
     
     # Filters packets of other types as they aren't of interest
-    valid = []
-    for p in pcap:
-        if IP in p:
-            valid.append(p)
+    filtered_packets = []
+    for packet in pcap_packets:
+        if IP in packet:
+            filtered_packets.append(packet)
         
     # From the first packet gets source and destination address
-    source_addr = valid[0][IP].src
-    dest_addr = valid[0][IP].dst
+    source_addr = filtered_packets[0][IP].src
+    dest_addr = filtered_packets[0][IP].dst
     print(f"Source IP address: {source_addr}")
     print(f"Destination IP address: {dest_addr}")
 
     # Calculates the number of bytes sent by each host
-    bytes_sent_1 = 0
-    bytes_sent_2 = 0
-    for p in valid:
-        if p[IP].src == source_addr:
-            bytes_sent_1 += len(p[IP])
+    bytes_sent_src = 0
+    bytes_sent_dest = 0
+    for packet in filtered_packets:
+        if packet[IP].src == source_addr:
+            bytes_sent_src += len(packet)
         else:
-            bytes_sent_2 += len(p[IP])
+            bytes_sent_dest += len(packet)
 
     # Gets start and end time for each host and convert to seconds
-    start_time_1 = valid[0][IP].time 
-    end_time_1 = valid[-2][IP].time 
-    start_time_2 = valid[1][IP].time 
-    end_time_2 = valid[-1][IP].time
+    start_time_src = filtered_packets[FIRST_SRC].time 
+    end_time_src = filtered_packets[LAST_SRC].time 
+    start_time_dest = filtered_packets[FIRST_DEST].time 
+    end_time_dest = filtered_packets[LAST_DEST].time
 
     # Calculates throughput
     print("Throughput:")
 
-    for idx, p in enumerate(valid):
-        print(idx, p[IP].time)
-
-    tp_1 = bytes_sent_1 / (end_time_1 - start_time_1)
-    tp_2 = bytes_sent_2 / (end_time_2 - start_time_2)
-    print(f"- Source throughput: {tp_1: .3f} bytes/s")
-    print(f"- Destination throughput: {tp_2: .3f} bytes/s")
+    tp_src = bytes_sent_src / (end_time_src - start_time_src)
+    tp_dest = bytes_sent_dest / (end_time_dest - start_time_dest)
+    print(f"- Source throughput: {tp_src: .3f} bytes/s")
+    print(f"- Destination throughput: {tp_dest: .3f} bytes/s")
 
 
     # Calculates total number of packets
     print("Total number of packets received:")
     source_count = 0
     dest_count = 0
-    for p in valid:
-        if p[IP].dst == source_addr:
+    for packet in filtered_packets:
+        if packet[IP].dst == source_addr:
             source_count += 1
-        elif p[IP].dst == dest_addr:
+        elif packet[IP].dst == dest_addr:
             dest_count += 1
     print(f"- Source received: {source_count} packets")
     print(f"- Destination received: {dest_count} packets")
