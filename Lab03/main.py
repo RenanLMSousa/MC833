@@ -32,6 +32,14 @@ def pcap_analyze(file_name : str):
     print(f"Destination IP address: {dest_addr}")
     print()
 
+    # Gets average time between packets, using src and dest addrs to diferentiate
+    print("Average time between packets:")
+    avg_time_src = get_average_time(src_addr, filtered_packets)
+    avg_time_dest = get_average_time(dest_addr, filtered_packets)
+    print(f"- Source: {avg_time_src: .3f} s")
+    print(f"- Destination: {avg_time_dest: .3f} s")
+    print()
+    
     # Calculates the number of bytes sent by each host
     bits_sent_src = 0
     bits_sent_dest = 0
@@ -46,14 +54,6 @@ def pcap_analyze(file_name : str):
     end_time_src = filtered_packets[LAST_SRC].time 
     start_time_dest = filtered_packets[FIRST_DEST].time 
     end_time_dest = filtered_packets[LAST_DEST].time
-        
-    # Gets avarage time between packets, using src and dest addrs to diferentiate
-    print("Average time between packets:")
-    avg_time_src = get_average_time(src_addr, filtered_packets)
-    avg_time_dest = get_average_time(dest_addr, filtered_packets)
-    print(f"- Source: {avg_time_src: .3f} s")
-    print(f"- Destination: {avg_time_dest: .3f} s")
-    print()
 
     # Calculates throughput
     print("Throughput:")
